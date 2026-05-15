@@ -1,0 +1,383 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+/* ── Tokens ── */
+:root {
+  --bg: #0d0f14;
+  --surface: #151720;
+  --surface-2: #1c1f2e;
+  --border: rgba(255, 255, 255, 0.07);
+  --accent: #f0a500;
+  --accent-glow: rgba(240, 165, 0, 0.18);
+  --text-1: #edeae3;
+  --text-2: #5e6278;
+}
+
+[data-theme="light"] {
+  --bg: #f0ede8;
+  --surface: #ffffff;
+  --surface-2: #e8e4dd;
+  --border: rgba(0, 0, 0, 0.07);
+  --accent: #c88a00;
+  --accent-glow: rgba(200, 138, 0, 0.12);
+  --text-1: #18160f;
+  --text-2: #8a8070;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Page ── */
+.login-page {
+  min-height: 100vh;
+  background: var(--bg);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s;
+}
+
+.login-page::before {
+  content: '';
+  position: absolute;
+  width: 560px;
+  height: 560px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* ── Theme toggle (same as homepage) ── */
+.Theme {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.Theme:hover {
+  color: var(--accent);
+  border-color: rgba(240, 165, 0, 0.4);
+}
+
+/* ── Card ── */
+.login-card {
+  position: relative;
+  z-index: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 44px 48px;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+.login-header {
+  margin-bottom: 28px;
+}
+
+.login-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.login-header p {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.login-header p a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.login-header p a:hover {
+  text-decoration: underline;
+}
+
+/* ── Form ── */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.field input {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 12px 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text-1);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.field input::placeholder {
+  color: var(--text-2);
+  opacity: 0.6;
+}
+
+.field input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.field-row label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.forgot-link {
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Password wrapper ── */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper input {
+  padding-right: 42px;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 13px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.eye-btn:hover {
+  color: var(--accent);
+}
+
+/* ── Login button ── */
+.login-btn {
+  width: 100%;
+  background: var(--accent);
+  color: #0d0f14;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 13px 0;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px var(--accent-glow);
+  transition: opacity 0.2s, transform 0.15s;
+  margin-top: 4px;
+}
+
+.login-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* ── Divider ── */
+.or-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.or-divider::before,
+.or-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.or-divider span {
+  font-size: 11px;
+  color: var(--text-2);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ── Social buttons ── */
+.social-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.social-btn {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 16px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.social-btn:hover {
+  transform: translateY(-2px);
+}
+
+.social-btn img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+  border-radius: 50%;
+}
+
+.social-btn:hover img {
+  opacity: 1;
+}
+
+/* Google button */
+.google-btn {
+  background: linear-gradient(135deg, #ffffff 0%, #f3f3f3 100%);
+  border: 1.5px solid #e0e0e0;
+  color: #2d2d2d;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.google-btn:hover {
+  border-color: #d0d0d0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  background: linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%);
+}
+
+/* Facebook button */
+.facebook-btn {
+  background: linear-gradient(135deg, #1877f2 0%, #0a66c2 100%);
+  border: 1.5px solid #0a66c2;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(24, 119, 242, 0.25);
+}
+
+.facebook-btn:hover {
+  border-color: #053c8f;
+  box-shadow: 0 4px 16px rgba(24, 119, 242, 0.35);
+  background: linear-gradient(135deg, #1970ed 0%, #0959b8 100%);
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .google-btn {
+  background: linear-gradient(135deg, #ffffff 0%, #f3f3f3 100%);
+  border-color: #d0d0d0;
+  color: #1f1f1f;
+}
+
+[data-theme="dark"] .google-btn:hover {
+  border-color: #b0b0b0;
+  background: linear-gradient(135deg, #f5f5f5 0%, #ebebeb 100%);
+}
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .login-page {
+    padding: 20px 16px;
+    align-items: center;
+  }
+
+  .login-card {
+    padding: 32px 24px;
+    border-radius: 20px;
+    max-width: 100%;
+  }
+
+  .login-header h1 {
+    font-size: 20px;
+  }
+
+  .field input {
+    font-size: 16px;
+    padding: 13px 14px;
+  }
+
+  .login-btn {
+    padding: 14px 0;
+    font-size: 15px;
+  }
+
+  .social-btn {
+    font-size: 13px;
+    padding: 13px 0;
+  }
+}

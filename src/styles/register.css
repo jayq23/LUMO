@@ -1,0 +1,245 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+/* ── Tokens (in sync with homepage & login) ── */
+:root {
+  --bg: #0d0f14;
+  --surface: #151720;
+  --surface-2: #1c1f2e;
+  --border: rgba(255, 255, 255, 0.07);
+  --accent: #f0a500;
+  --accent-glow: rgba(240, 165, 0, 0.18);
+  --text-1: #edeae3;
+  --text-2: #5e6278;
+}
+
+[data-theme="light"] {
+  --bg: #f0ede8;
+  --surface: #ffffff;
+  --surface-2: #e8e4dd;
+  --border: rgba(0, 0, 0, 0.07);
+  --accent: #c88a00;
+  --accent-glow: rgba(200, 138, 0, 0.12);
+  --text-1: #18160f;
+  --text-2: #8a8070;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Page ── */
+.register-page {
+  min-height: 100vh;
+  background: var(--bg);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s;
+}
+
+.register-page::before {
+  content: '';
+  position: absolute;
+  width: 560px;
+  height: 560px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* ── Theme toggle ── */
+.Theme {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.Theme:hover {
+  color: var(--accent);
+  border-color: rgba(240, 165, 0, 0.4);
+}
+
+/* ── Card ── */
+.register-card {
+  position: relative;
+  z-index: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 44px 48px;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+.register-header {
+  margin-bottom: 28px;
+  margin-top: 20px;
+}
+
+.createText{
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
+  margin-bottom: 15px;
+}
+
+.register-header p {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.register-header p a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.register-header p a:hover {
+  text-decoration: underline;
+}
+
+/* ── Form ── */
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.field input {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 12px 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text-1);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.field input::placeholder {
+  color: var(--text-2);
+  opacity: 0.6;
+}
+
+.field input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* ── Password wrapper ── */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper input {
+  padding-right: 42px;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 13px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.eye-btn:hover {
+  color: var(--accent);
+}
+
+/* ── Submit button ── */
+.register-btn {
+  width: 100%;
+  background: var(--accent);
+  color: #0d0f14;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 13px 0;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px var(--accent-glow);
+  transition: opacity 0.2s, transform 0.15s;
+  margin-top: 4px;
+}
+
+.register-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .register-page {
+    padding: 20px 16px;
+  }
+
+  .register-card {
+    padding: 32px 24px;
+    border-radius: 20px;
+    max-width: 100%;
+  }
+
+  .createText{
+    font-size: 20px;
+  }
+
+  .field input {
+    font-size: 16px;
+    padding: 13px 14px;
+  }
+
+  .register-btn {
+    padding: 14px 0;
+    font-size: 15px;
+  }
+}
