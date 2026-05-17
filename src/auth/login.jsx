@@ -17,8 +17,8 @@ function Login() {
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const darkModeEnabled = savedTheme === "dark";
-    setIsDarkMode(darkModeEnabled);
     document.documentElement.setAttribute("data-theme", darkModeEnabled ? "dark" : "light");
+    setIsDarkMode(darkModeEnabled);
   }, []);
 
   if (user) {
@@ -48,6 +48,7 @@ function Login() {
     });
   };
 
+  // eslint-disable-next-line no-unused-vars
   const handleForgotPassword = (e) => {
     e.preventDefault();
     navigate("/forgot-password");

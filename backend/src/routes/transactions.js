@@ -1,10 +1,17 @@
 import express from 'express';
 import pool from '../db/pool.js';
+import { authMiddleware, verifyOwnership } from '../middleware/authMiddleware.js';
+import { validateRequest, schemas } from '../middleware/validation.js';
+import { dataLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
+// Protect all transaction routes with auth and rate limiting
+router.use(authMiddleware);
+router.use(dataLimiter);
+
 // Get all transactions for a user
-router.get('/user/:userId', async (req, res, next) => {
+router.get('/user/:userId', verifyOwnership, async (req, res, next) => {
   try {
     const { userId } = req.params;
     const query = `
@@ -21,7 +28,7 @@ router.get('/user/:userId', async (req, res, next) => {
 });
 
 // Create transaction
-router.post('/', async (req, res, next) => {
+router.post('/', validateRequest(schemas.transaction), verifyOwnership, async (req, res, next) => {
   try {
     const { userId, category, amount, description, transactionDate, type } = req.body;
 

@@ -12,6 +12,7 @@ router.get('/', async (req, res) => {
       timestamp: result.rows[0]
     });
   } catch (err) {
+    // eslint-disable-next-line no-unused-vars
     res.status(500).json({ 
       status: 'error', 
       message: 'Database connection failed' 

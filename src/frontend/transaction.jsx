@@ -9,6 +9,7 @@ import EmptyState from "./emptyState.jsx";
 import { formatCurrency } from '../utils/currencyHelper.js';
 import { formatDate, getLanguageCode } from '../utils/languageHelper.js';
 import { useTranslation } from '../utils/translations.js';
+import AddTransactionModal from './AddTransactionModal.jsx';
 
 const CATEGORY_COLORS = {
   food:          "#f0a500",
@@ -132,6 +133,16 @@ function Transactions() {
   return (
     <SectionShell title={t('transactions.title')} subtitle={t('transactions.subtitle')}>
       <div className="page-stack">
+
+        {/* Add Transaction Button */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+          <AddTransactionModal 
+            userId={user.id} 
+            onTransactionAdded={loadTransactions}
+            language={language}
+            currency={currency}
+          />
+        </div>
 
         {/* ── Top panels ── */}
         <section className="panel-grid">

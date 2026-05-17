@@ -19,6 +19,7 @@ function BudgetSummaryCard({ label, value, note }) {
     </div>
   );
 }
+const Category = {'Groceries': 'Food', 'Dining': 'Food', 'Restaurants': 'Food', 'Transport': 'Transport', 'Taxi': 'Transport', 'Bus': 'Transport', 'Train': 'Transport', 'Shopping': 'Shopping', 'Clothing': 'Shopping', 'Electronics': 'Shopping', 'Subscriptions': 'Subscriptions', 'Health': 'Health', 'Utilities': 'Utilities'};
 
 function Budgets() {
   const { user, isInitialized, preferences } = useAuth();
@@ -44,6 +45,16 @@ function Budgets() {
       loadBudgets();
       loadTransactions();
     }
+  }, [user, isInitialized]);
+
+  // Auto-refresh transactions every 2 seconds to sync with added transactions
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (user && isInitialized) {
+        loadTransactions();
+      }
+    }, 2000);
+    return () => clearInterval(interval);
   }, [user, isInitialized]);
 
   const loadBudgets = async () => {
@@ -94,6 +105,7 @@ function Budgets() {
       setNewBudget({ category: '', limitAmount: '' });
       setShowCreateModal(false);
       await loadBudgets();
+      await loadTransactions();
     } catch (err) {
       console.error('Failed to create budget:', err);
       setError('Failed to create budget');
@@ -156,7 +168,27 @@ function Budgets() {
   }
 
   const totalBudgeted = budgets.reduce((sum, b) => sum + parseFloat(b.limit_amount), 0);
-  const totalSpent = budgets.reduce((sum, b) => sum + parseFloat(b.spent_amount), 0);
+  
+  // Calculate actual spending from transactions by category
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+  
+  const monthTransactions = transactions.filter(t => {
+    const tDate = new Date(t.transaction_date);
+    return tDate.getMonth() + 1 === currentMonth && 
+           tDate.getFullYear() === currentYear && 
+           t.type === 'expense';
+  });
+
+  const spentByCategory = {};
+  monthTransactions.forEach(t => {
+    // Use mapped category name or fallback to lowercase transaction category
+    const mappedCategory = Category[t.category] || t.category.toLowerCase();
+    spentByCategory[mappedCategory] = (spentByCategory[mappedCategory] || 0) + parseFloat(t.amount);
+  });
+
+  const totalSpent = Object.values(spentByCategory).reduce((sum, amount) => sum + amount, 0);
   const totalRemaining = totalBudgeted - totalSpent;
 
   return (
@@ -319,13 +351,14 @@ function Budgets() {
             ) : budgets.length > 0 ? (
               <div>
                 {budgets.map(b => {
-                  const percentage = (parseFloat(b.spent_amount) / parseFloat(b.limit_amount) * 100).toFixed(0);
+                  const categorySpent = spentByCategory[b.category.toLowerCase()] || 0;
+                  const percentage = (categorySpent / parseFloat(b.limit_amount) * 100).toFixed(0);
                   return (
                     <div key={b.id} style={{ padding: '1rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                           <strong>{b.category}</strong>
-                          <span>{formatCurrency(parseFloat(b.spent_amount), currency)} / {formatCurrency(parseFloat(b.limit_amount), currency)}</span>
+                          <span>{formatCurrency(categorySpent, currency)} / {formatCurrency(parseFloat(b.limit_amount), currency)}</span>
                         </div>
                         <div style={{ 
                           background: 'var(--bg-2)', 
@@ -449,19 +482,19 @@ function Budgets() {
                 <div>
                   <small style={{ color: 'var(--text-3)' }}>{t('budgets.averageDailySpend')}</small>
                   <div style={{ fontSize: '1.5rem', fontWeight: '600', marginTop: '0.25rem' }}>
-                    ${outlook.avgDailySpend}
+                    {formatCurrency(outlook.avgDailySpend, currency)}
                   </div>
                 </div>
                 <div>
                   <small style={{ color: 'var(--text-3)' }}>{t('budgets.projectedFinalSpend')}</small>
                   <div style={{ fontSize: '1.5rem', fontWeight: '600', marginTop: '0.25rem' }}>
-                    ${outlook.projectedFinalSpending}
+                    {formatCurrency(outlook.projectedFinalSpending, currency)}
                   </div>
                 </div>
               </div>
               <div style={{ marginTop: '1rem', padding: '1rem', borderRadius: '4px', background: outlook.onTrack ? 'rgba(81, 207, 102, 0.1)' : 'rgba(255, 107, 107, 0.1)' }}>
                 <strong style={{ color: outlook.onTrack ? '#51cf66' : '#ff6b6b' }}>
-                  {outlook.onTrack ? '✓ On track' : `⚠ Projected overspend: $${outlook.projectedOverspend}`}
+                  {outlook.onTrack ? '✓ On track' : `⚠ Projected overspend: ${formatCurrency(outlook.projectedOverspend, currency)}`}
                 </strong>
               </div>
             </div>

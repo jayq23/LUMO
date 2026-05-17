@@ -1,5 +1,6 @@
 import bcryptjs from 'bcryptjs';
 import * as userModel from '../models/userModel.js';
+import { generateToken } from '../middleware/authMiddleware.js';
 
 export const register = async (req, res, next) => {
   try {
@@ -22,10 +23,14 @@ export const register = async (req, res, next) => {
 
     // Create user
     const user = await userModel.createUser(email, passwordHash, name);
+    
+    // Generate JWT token
+    const token = generateToken(user.id);
 
     res.status(201).json({
       message: 'User registered successfully',
-      user
+      user,
+      token
     });
   } catch (err) {
     next(err);
@@ -54,10 +59,13 @@ export const login = async (req, res, next) => {
     }
 
     // Return user (without password)
-    const { password_hash, ...userWithoutPassword } = user;
+    const { password_hash: _password_hash, ...userWithoutPassword } = user;
+    const token = generateToken(user.id);
+    
     res.json({
       message: 'Login successful',
-      user: userWithoutPassword
+      user: userWithoutPassword,
+      token
     });
   } catch (err) {
     next(err);
@@ -102,7 +110,7 @@ export const updateProfile = async (req, res, next) => {
     }
 
     const updatedUser = await userModel.updateUser(userId, { name, email });
-    const { password_hash, ...userWithoutPassword } = updatedUser;
+    const { password_hash: _password_hash, ...userWithoutPassword } = updatedUser;
 
     res.json({
       message: 'Profile updated successfully',
@@ -142,7 +150,7 @@ export const changePassword = async (req, res, next) => {
     const passwordHash = await bcryptjs.hash(newPassword, salt);
 
     const updatedUser = await userModel.updateUser(userId, { password_hash: passwordHash });
-    const { password_hash, ...userWithoutPassword } = updatedUser;
+    const { password_hash: _password_hash, ...userWithoutPassword } = updatedUser;
 
     res.json({
       message: 'Password changed successfully',

@@ -87,7 +87,8 @@ const currencyOptions = [
   'KRW', 
   'RUB', 
   'SAR', 
-  'BRL'  
+  'BRL',
+  'PHP',
 ];
 const languageOptions = [
   'English',

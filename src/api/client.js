@@ -1,5 +1,40 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+// Helper to get auth headers
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('authToken');
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` })
+  };
+};
+
+export const apiClient = async (path, opts = {}) => {
+  const token = localStorage.getItem('authToken');
+  console.log('DEBUG apiClient call:', { 
+    path, 
+    hasToken: !!token, 
+    tokenValue: token ? token.substring(0, 30) + '...' : 'NO TOKEN',
+  });
+  
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` }),
+    ...(opts.headers || {}),
+  };
+
+  const res = await fetch(`${API_URL}${path.startsWith('/') ? '' : '/'}${path}`, {
+    ...opts,
+    headers,
+  });
+  
+  const data = await res.json();
+  if (!res.ok) {
+    console.error('DEBUG API error:', res.status, res.statusText, data);
+  }
+  return data;
+};
+
 const api = {
   // Health
   health: () => fetch(`${API_URL}/health`).then(r => r.json()),
@@ -21,12 +56,14 @@ const api = {
       }).then(r => r.json()),
 
     profile: (id) =>
-      fetch(`${API_URL}/auth/profile/${id}`).then(r => r.json()),
+      fetch(`${API_URL}/auth/profile/${id}`, {
+        headers: getAuthHeaders()
+      }).then(r => r.json()),
 
     updateProfile: (id, name, email) =>
       fetch(`${API_URL}/auth/profile/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ name, email }),
       }).then(async r => {
         const data = await r.json();
@@ -39,7 +76,7 @@ const api = {
     changePassword: (id, currentPassword, newPassword) =>
       fetch(`${API_URL}/auth/password/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ currentPassword, newPassword }),
       }).then(async r => {
         const data = await r.json();
@@ -52,7 +89,7 @@ const api = {
     deleteAccount: (id) =>
       fetch(`${API_URL}/auth/account/${id}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
       }).then(async r => {
         const data = await r.json();
         if (!r.ok) {
@@ -65,12 +102,14 @@ const api = {
   // Transactions
   transactions: {
     getAll: (userId) =>
-      fetch(`${API_URL}/transactions/user/${userId}`).then(r => r.json()),
+      fetch(`${API_URL}/transactions/user/${userId}`, {
+        headers: getAuthHeaders()
+      }).then(r => r.json()),
 
     create: (userId, category, amount, description, transactionDate, type) =>
       fetch(`${API_URL}/transactions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           userId,
           category,
@@ -84,25 +123,28 @@ const api = {
     update: (id, updates) =>
       fetch(`${API_URL}/transactions/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(updates),
       }).then(r => r.json()),
 
     delete: (id) =>
       fetch(`${API_URL}/transactions/${id}`, {
         method: 'DELETE',
+        headers: getAuthHeaders(),
       }).then(r => r.json()),
   },
 
   // Budgets
   budgets: {
     getAll: (userId) =>
-      fetch(`${API_URL}/budgets/user/${userId}`).then(r => r.json()),
+      fetch(`${API_URL}/budgets/user/${userId}`, {
+        headers: getAuthHeaders()
+      }).then(r => r.json()),
 
     create: (userId, category, limitAmount, month, year) =>
       fetch(`${API_URL}/budgets`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           userId,
           category,
@@ -115,13 +157,14 @@ const api = {
     update: (id, limitAmount) =>
       fetch(`${API_URL}/budgets/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ limitAmount }),
       }).then(r => r.json()),
 
     delete: (id) =>
       fetch(`${API_URL}/budgets/${id}`, {
         method: 'DELETE',
+        headers: getAuthHeaders(),
       }).then(r => r.json()),
   },
 };

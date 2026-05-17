@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from './auth/AuthContext.jsx'
+import AIAssistant from './frontend/AIAssistant.jsx'
 import Login from './auth/login.jsx'
 import Register from './auth/register.jsx'
 import Dashboard from './frontend/dashboard.jsx'
@@ -23,6 +24,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>
+        {/* AI Assistant available on all pages */}
+        <AIAssistant />
       </BrowserRouter>
     </AuthProvider>
   )

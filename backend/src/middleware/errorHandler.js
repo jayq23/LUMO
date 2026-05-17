@@ -1,4 +1,4 @@
-export const errorHandler = (err, req, res, next) => {
+export const errorHandler = (err, req, res) => {
   console.error('Error:', err);
 
   if (err.code === '23505') {

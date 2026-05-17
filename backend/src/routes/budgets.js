@@ -1,10 +1,17 @@
 import express from 'express';
 import pool from '../db/pool.js';
+import { authMiddleware, verifyOwnership } from '../middleware/authMiddleware.js';
+import { validateRequest, schemas } from '../middleware/validation.js';
+import { dataLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
+// Protect all budget routes with auth and rate limiting
+router.use(authMiddleware);
+router.use(dataLimiter);
+
 // Get all budgets for a user
-router.get('/user/:userId', async (req, res, next) => {
+router.get('/user/:userId', verifyOwnership, async (req, res, next) => {
   try {
     const { userId } = req.params;
     const query = `
@@ -21,7 +28,7 @@ router.get('/user/:userId', async (req, res, next) => {
 });
 
 // Create budget
-router.post('/', async (req, res, next) => {
+router.post('/', validateRequest(schemas.budget), verifyOwnership, async (req, res, next) => {
   try {
     const { userId, category, limitAmount, month, year } = req.body;
 

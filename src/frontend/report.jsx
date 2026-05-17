@@ -214,7 +214,7 @@ ${transactions.map(t =>
           <ReportMetricCard 
             label={t('reports.monthlySpending')} 
             value={metrics ? formatCurrency(metrics.monthlySpent, currency) : "—"} 
-            note={metrics ?formatCurrency("Total expenses this month", currency) : t('reports.loading')} 
+            note={metrics ? "Total expenses this month" : t('reports.loading')} 
           />
           <ReportMetricCard 
             label={t('reports.topCategory')} 
@@ -222,14 +222,14 @@ ${transactions.map(t =>
             note={metrics ? formatCurrency(metrics.topCategoryAmount, currency) : t('reports.loading')} 
           />
           <ReportMetricCard 
-            label= {t('reports.averageTransaction')}
+            label={t('reports.averageTransaction')}
             value={metrics ? formatCurrency(metrics.avgSpend, currency) : "—"} 
-            note={metrics ? formatCurrency("Per transaction", currency) : t('reports.loading')} 
+            note={metrics ? "Per transaction" : t('reports.loading')} 
           />
           <ReportMetricCard 
             label={t('reports.budgetHealth')} 
-            value={metrics ? formatCurrency(metrics.savingsRate, currency) : "—"} 
-            note={metrics ? formatCurrency("Remaining vs budget", currency) : t('reports.loading')} 
+            value={metrics ? `${metrics.savingsRate}%` : "—"} 
+            note={metrics ? "Remaining vs budget" : t('reports.loading')} 
           />
         </section>
 

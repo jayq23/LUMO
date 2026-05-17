@@ -20,29 +20,28 @@ export const AuthProvider = ({ children }) => {
 
   // Load user from localStorage on mount
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    const savedPreferences = localStorage.getItem('preferences');
-    if (savedUser) {
-      try {
+    try {
+      const savedUser = localStorage.getItem('user');
+      const savedPreferences = localStorage.getItem('preferences');
+      
+      if (savedUser) {
         setUser(JSON.parse(savedUser));
-      } catch (err) {
-        console.error('Failed to parse saved user:', err);
       }
-    }
-    if (savedPreferences) {
-      try {
+      if (savedPreferences) {
         setPreferences(JSON.parse(savedPreferences));
-      } catch (err) {
-        console.error('Failed to parse saved preferences:', err);
       }
+    } catch (err) {
+      console.error('Failed to parse saved data:', err);
+    } finally {
+      setIsInitialized(true);
     }
-    setIsInitialized(true);
   }, []);
 
   const register = async (email, password, name) => {
     setLoading(true);
     setError(null);
     try {
+      // eslint-disable-next-line no-unused-vars
       const response = await api.auth.register(email, password, name);
       if (response.error) {
         setError(response.error);
@@ -50,6 +49,9 @@ export const AuthProvider = ({ children }) => {
       }
       setUser(response.user);
       localStorage.setItem('user', JSON.stringify(response.user));
+      if (response.token) {
+        localStorage.setItem('authToken', response.token);
+      }
       return true;
     } catch (err) {
       setError(err.message);
@@ -63,13 +65,26 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
+      // eslint-disable-next-line no-unused-vars
       const response = await api.auth.login(email, password);
+      console.log('DEBUG login response:', response);
+      
       if (response.error) {
         setError(response.error);
         return false;
       }
+      
       setUser(response.user);
       localStorage.setItem('user', JSON.stringify(response.user));
+      
+      if (response.token) {
+        console.log('DEBUG saving token:', response.token.substring(0, 20) + '...');
+        localStorage.setItem('authToken', response.token);
+        const checkToken = localStorage.getItem('authToken');
+        console.log('DEBUG token saved and retrieved:', !!checkToken, checkToken?.substring(0, 20) + '...');
+      } else {
+        console.warn('WARNING: No token in login response');
+      }
       return true;
     } catch (err) {
       setError(err.message);
@@ -82,6 +97,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('authToken');
   };
 
   const updateProfile = async (name, email) => {
@@ -104,6 +120,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
+      // eslint-disable-next-line no-unused-vars
       const response = await api.auth.changePassword(user.id, currentPassword, newPassword);
       return true;
     } catch (err) {
@@ -118,6 +135,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
+      // eslint-disable-next-line no-unused-vars
       const response = await api.auth.deleteAccount(user.id);
       logout();
       return true;
@@ -154,6 +172,7 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
