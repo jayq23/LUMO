@@ -54,6 +54,7 @@ function Login() {
   // Google login handler
   const handleGoogleLogin = async () => {
     try {
+      console.log('🔍 API URL:', import.meta.env.VITE_API_URL)
       console.log('🔍 Starting Google login...')
       const provider = new GoogleAuthProvider()
       console.log('✅ GoogleAuthProvider created')
@@ -92,6 +93,7 @@ function Login() {
   // Facebook login handler
   const handleFacebookLogin = async () => {
     try {
+      console.log('🔍 API URL:', import.meta.env.VITE_API_URL)
       console.log('🔍 Starting Facebook login...')
       const provider = new FacebookAuthProvider()
       provider.addScope('email')
