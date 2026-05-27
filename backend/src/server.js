@@ -41,10 +41,10 @@ const corsOptions = {
 // Middleware
 app.use(helmet());
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Handle preflight for all routes
+app.options('*', cors(corsOptions)); // Handle preflight for all routes BEFORE rate limiter
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(globalLimiter);
+app.use(globalLimiter); // Rate limiter after CORS/preflight handling
 
 // Routes
 app.use('/api/health', healthRoutes);
