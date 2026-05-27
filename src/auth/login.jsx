@@ -5,6 +5,9 @@ import facebook from "../assets/facebook.png";
 import google from "../assets/google.png";
 import { Sun, Moon, Eye, EyeOff } from "lucide-react";
 import "../styles/login.css";
+import { auth } from '../../firebase'
+import { signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth'
+import api from "../api/client.js";
 
 function Login() {
   const { user, login, loading, error } = useAuth();
@@ -47,6 +50,83 @@ function Login() {
       return nextValue;
     });
   };
+
+  // Google login handler
+  const handleGoogleLogin = async () => {
+    try {
+      console.log('🔍 Starting Google login...')
+      const provider = new GoogleAuthProvider()
+      console.log('✅ GoogleAuthProvider created')
+      
+      const result = await signInWithPopup(auth, provider)
+      console.log('✅ Firebase auth successful:', result.user.email)
+      
+      const user = result.user
+      
+      // Get Firebase ID token
+      const idToken = await user.getIdToken()
+      console.log('✅ ID token obtained')
+      
+      // Send to backend for verification and JWT token generation
+      console.log('📡 Sending token to backend...')
+      const response = await api.oauth.socialLogin(idToken, 'google')
+      console.log('✅ Backend response:', response)
+      
+      if (response.user && response.token) {
+        // Update AuthContext with backend user data
+        localStorage.setItem('user', JSON.stringify(response.user))
+        localStorage.setItem('authToken', response.token)
+        console.log('✅ User stored in localStorage')
+        
+        // Redirect to dashboard
+        navigate('/dashboard')
+      } else {
+        alert('Failed to complete login. Please try again.')
+      }
+    } catch (error) {
+      console.error('❌ Google login error:', error)
+      alert('Google login failed: ' + error.message)
+    }
+  }
+
+  // Facebook login handler
+  const handleFacebookLogin = async () => {
+    try {
+      console.log('🔍 Starting Facebook login...')
+      const provider = new FacebookAuthProvider()
+      provider.addScope('email')
+      console.log('✅ FacebookAuthProvider created')
+      
+      const result = await signInWithPopup(auth, provider)
+      console.log('✅ Firebase auth successful:', result.user.email)
+      
+      const user = result.user
+      
+      // Get Firebase ID token
+      const idToken = await user.getIdToken()
+      console.log('✅ ID token obtained')
+      
+      // Send to backend for verification and JWT token generation
+      console.log('📡 Sending token to backend...')
+      const response = await api.oauth.socialLogin(idToken, 'facebook')
+      console.log('✅ Backend response:', response)
+      
+      if (response.user && response.token) {
+        // Update AuthContext with backend user data
+        localStorage.setItem('user', JSON.stringify(response.user))
+        localStorage.setItem('authToken', response.token)
+        console.log('✅ User stored in localStorage')
+        
+        // Redirect to dashboard
+        navigate('/dashboard')
+      } else {
+        alert('Failed to complete login. Please try again.')
+      }
+    } catch (error) {
+      console.error('❌ Facebook login error:', error)
+      alert('Facebook login failed: ' + error.message)
+    }
+  }
 
   // eslint-disable-next-line no-unused-vars
   const handleForgotPassword = (e) => {
@@ -118,11 +198,11 @@ function Login() {
         </div>
 
         <div className="social-btns">
-          <button className="social-btn google-btn" type="button">
+          <button className="social-btn google-btn" type="button" onClick={handleGoogleLogin}>
             <img src={google} alt="Google logo" />
             Continue with Google
           </button>
-          <button className="social-btn facebook-btn" type="button">
+          <button className="social-btn facebook-btn" type="button" onClick={handleFacebookLogin}>
             <img src={facebook} alt="Facebook logo" />
             Continue with Facebook
           </button>

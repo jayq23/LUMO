@@ -167,6 +167,22 @@ const api = {
         headers: getAuthHeaders(),
       }).then(r => r.json()),
   },
+
+  // OAuth / Social Login
+  oauth: {
+    socialLogin: (idToken, provider) =>
+      fetch(`${API_URL}/oauth/social-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, provider }),
+      }).then(async r => {
+        const data = await r.json();
+        if (!r.ok) {
+          throw new Error(data.error || 'Social login failed');
+        }
+        return data;
+      }),
+  },
 };
 
 export default api;

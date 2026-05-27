@@ -10,6 +10,16 @@ export const createUser = async (email, passwordHash, name) => {
   return result.rows[0];
 };
 
+export const createOAuthUser = async (email, name, provider, providerUid) => {
+  const query = `
+    INSERT INTO users (email, name, oauth_provider, oauth_uid)
+    VALUES ($1, $2, $3, $4)
+    RETURNING id, email, name, created_at
+  `;
+  const result = await pool.query(query, [email, name, provider, providerUid]);
+  return result.rows[0];
+};
+
 export const getUserByEmail = async (email) => {
   const query = 'SELECT * FROM users WHERE email = $1';
   const result = await pool.query(query, [email]);

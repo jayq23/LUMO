@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: expensetracker-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node src/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DATABASE_URL
+        syncWithDatabase:
+          id: expensetracker_db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: https://YOUR_VERCEL_FRONTEND_URL.vercel.app
+
+databases:
+  - name: expensetracker
+    databaseName: expensetracker
+    plan: free
