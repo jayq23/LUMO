@@ -41,7 +41,7 @@ A modern, easy-to-use expense tracking application to manage your finances with 
 - Manage preferences
 - Dark mode for comfortable viewing
 
-### 🤖 AI Assistant
+### 💡 Smart Insights
 - Get smart expense insights
 - Categorize expenses automatically
 - Spending recommendations
