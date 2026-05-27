@@ -15,6 +15,8 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [facebookLoading, setFacebookLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,6 +24,8 @@ function Login() {
     const darkModeEnabled = savedTheme === "dark";
     document.documentElement.setAttribute("data-theme", darkModeEnabled ? "dark" : "light");
     setIsDarkMode(darkModeEnabled);
+    // Wake up Render
+    fetch('https://lumo-5f41.onrender.com/api/health').catch(() => {})
   }, []);
 
   if (user) {
@@ -51,35 +55,18 @@ function Login() {
     });
   };
 
-  // Google login handler
   const handleGoogleLogin = async () => {
+    setGoogleLoading(true)
     try {
-      console.log('🔍 API URL:', import.meta.env.VITE_API_URL)
-      console.log('🔍 Starting Google login...')
       const provider = new GoogleAuthProvider()
-      console.log('✅ GoogleAuthProvider created')
-      
       const result = await signInWithPopup(auth, provider)
-      console.log('✅ Firebase auth successful:', result.user.email)
-      
-      const user = result.user
-      
-      // Get Firebase ID token
-      const idToken = await user.getIdToken()
-      console.log('✅ ID token obtained')
-      
-      // Send to backend for verification and JWT token generation
+      const idToken = await result.user.getIdToken()
       console.log('📡 Sending token to backend...')
       const response = await api.oauth.socialLogin(idToken, 'google')
-      console.log('✅ Backend response:', response)
-      
+      console.log('✅ Backend response:', JSON.stringify(response))
       if (response.user && response.token) {
-        // Update AuthContext with backend user data
         localStorage.setItem('user', JSON.stringify(response.user))
         localStorage.setItem('authToken', response.token)
-        console.log('✅ User stored in localStorage')
-        
-        // Redirect to dashboard
         navigate('/dashboard')
       } else {
         alert('Failed to complete login. Please try again.')
@@ -87,39 +74,24 @@ function Login() {
     } catch (error) {
       console.error('❌ Google login error:', error)
       alert('Google login failed: ' + error.message)
+    } finally {
+      setGoogleLoading(false)
     }
   }
 
-  // Facebook login handler
   const handleFacebookLogin = async () => {
+    setFacebookLoading(true)
     try {
-      console.log('🔍 API URL:', import.meta.env.VITE_API_URL)
-      console.log('🔍 Starting Facebook login...')
       const provider = new FacebookAuthProvider()
       provider.addScope('email')
-      console.log('✅ FacebookAuthProvider created')
-      
       const result = await signInWithPopup(auth, provider)
-      console.log('✅ Firebase auth successful:', result.user.email)
-      
-      const user = result.user
-      
-      // Get Firebase ID token
-      const idToken = await user.getIdToken()
-      console.log('✅ ID token obtained')
-      
-      // Send to backend for verification and JWT token generation
+      const idToken = await result.user.getIdToken()
       console.log('📡 Sending token to backend...')
       const response = await api.oauth.socialLogin(idToken, 'facebook')
-      console.log('✅ Backend response:', response)
-      
+      console.log('✅ Backend response:', JSON.stringify(response))
       if (response.user && response.token) {
-        // Update AuthContext with backend user data
         localStorage.setItem('user', JSON.stringify(response.user))
         localStorage.setItem('authToken', response.token)
-        console.log('✅ User stored in localStorage')
-        
-        // Redirect to dashboard
         navigate('/dashboard')
       } else {
         alert('Failed to complete login. Please try again.')
@@ -127,10 +99,11 @@ function Login() {
     } catch (error) {
       console.error('❌ Facebook login error:', error)
       alert('Facebook login failed: ' + error.message)
+    } finally {
+      setFacebookLoading(false)
     }
   }
 
-  // eslint-disable-next-line no-unused-vars
   const handleForgotPassword = (e) => {
     e.preventDefault();
     navigate("/forgot-password");
@@ -147,7 +120,7 @@ function Login() {
           {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
           
           <div className="field">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">EMAIL</label>
             <input 
               type="email" 
               id="email" 
@@ -160,7 +133,7 @@ function Login() {
 
           <div className="field">
             <div className="field-row">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">PASSWORD</label>
               <a href="/forgot-password" className="forgot-link">Forgot password?</a>
             </div>
             <div className="input-wrapper">
@@ -200,13 +173,13 @@ function Login() {
         </div>
 
         <div className="social-btns">
-          <button className="social-btn google-btn" type="button" onClick={handleGoogleLogin}>
+          <button className="social-btn google-btn" type="button" onClick={handleGoogleLogin} disabled={googleLoading}>
             <img src={google} alt="Google logo" />
-            Continue with Google
+            {googleLoading ? 'Connecting... (may take 30s)' : 'Continue with Google'}
           </button>
-          <button className="social-btn facebook-btn" type="button" onClick={handleFacebookLogin}>
+          <button className="social-btn facebook-btn" type="button" onClick={handleFacebookLogin} disabled={facebookLoading}>
             <img src={facebook} alt="Facebook logo" />
-            Continue with Facebook
+            {facebookLoading ? 'Connecting... (may take 30s)' : 'Continue with Facebook'}
           </button>
         </div>
       </div>
