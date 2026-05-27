@@ -152,6 +152,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('preferences', JSON.stringify(newPreferences));
   };
 
+  const socialLoginSuccess = (userData, token) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('authToken', token);
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -165,7 +171,8 @@ export const AuthProvider = ({ children }) => {
       deleteAccount,
       isInitialized,
       preferences,
-      savePreferences
+      savePreferences,
+      socialLoginSuccess
     }}>
       {children}
     </AuthContext.Provider>

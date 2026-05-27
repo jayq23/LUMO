@@ -10,7 +10,7 @@ import { signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'fireb
 import api from "../api/client.js";
 
 function Login() {
-  const { user, login, loading, error } = useAuth();
+  const { user, login, loading, error, socialLoginSuccess } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -65,8 +65,7 @@ function Login() {
       const response = await api.oauth.socialLogin(idToken, 'google')
       console.log('✅ Backend response:', JSON.stringify(response))
       if (response.user && response.token) {
-        localStorage.setItem('user', JSON.stringify(response.user))
-        localStorage.setItem('authToken', response.token)
+        socialLoginSuccess(response.user, response.token)
         navigate('/dashboard')
       } else {
         alert('Failed to complete login. Please try again.')
@@ -90,8 +89,7 @@ function Login() {
       const response = await api.oauth.socialLogin(idToken, 'facebook')
       console.log('✅ Backend response:', JSON.stringify(response))
       if (response.user && response.token) {
-        localStorage.setItem('user', JSON.stringify(response.user))
-        localStorage.setItem('authToken', response.token)
+        socialLoginSuccess(response.user, response.token)
         navigate('/dashboard')
       } else {
         alert('Failed to complete login. Please try again.')
