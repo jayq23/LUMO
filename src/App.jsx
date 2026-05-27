@@ -9,9 +9,11 @@ import Settings from './frontend/settings.jsx'
 import Budgets from './frontend/budgets.jsx'
 import Report from './frontend/report.jsx'
 import Transactions from './frontend/transaction.jsx'
+import { useEffect } from "react"; 
 // Wake up Render on app load
-fetch('https://lumo-5f41.onrender.com/api/health').catch(() => {});
-
+useEffect(() => {
+  fetch('https://lumo-5f41.onrender.com/api/health').catch(() => {})
+}, [])
 function App() {
   return (
     <AuthProvider>
