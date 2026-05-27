@@ -41,13 +41,13 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/ai', aiRoutes);
 
-// Error handling
-app.use(errorHandler);
-
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
+
+// Error handling (must be last)
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
