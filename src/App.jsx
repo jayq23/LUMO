@@ -10,11 +10,13 @@ import Budgets from './frontend/budgets.jsx'
 import Report from './frontend/report.jsx'
 import Transactions from './frontend/transaction.jsx'
 import { useEffect } from "react"; 
-// Wake up Render on app load
-useEffect(() => {
-  fetch('https://lumo-5f41.onrender.com/api/health').catch(() => {})
-}, [])
+
 function App() {
+  // Wake up Render on app load
+  useEffect(() => {
+    fetch('https://lumo-5f41.onrender.com/api/health').catch(() => {})
+  }, [])
+
   return (
     <AuthProvider>
       <BrowserRouter>
@@ -28,10 +30,10 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>
-        {/* AI Assistant available on all pages */}
         <AIAssistant />
       </BrowserRouter>
     </AuthProvider>
   )
 }
+
 export default App;
