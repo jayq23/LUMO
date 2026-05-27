@@ -7,10 +7,14 @@ let firebaseApp;
 
 export const initializeFirebase = () => {
   try {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
+    const raw = process.env.FIREBASE_SERVICE_ACCOUNT || '{}';
+    console.log('🔍 DEBUG: FIREBASE_SERVICE_ACCOUNT length:', raw.length); // should be > 100
+    console.log('🔍 DEBUG: CORS_ORIGIN:', process.env.CORS_ORIGIN);        // should show your domain
+    
+    const serviceAccount = JSON.parse(raw);
     
     if (!serviceAccount.project_id) {
-      console.warn('FIREBASE_SERVICE_ACCOUNT not configured. OAuth will use ID token validation only.');
+      console.warn('⚠️ FIREBASE_SERVICE_ACCOUNT not configured. OAuth will use ID token validation only.');
       return false;
     }
 
@@ -19,10 +23,10 @@ export const initializeFirebase = () => {
       projectId: serviceAccount.project_id,
     });
     
-    console.log('Firebase Admin SDK initialized');
+    console.log('✅ Firebase Admin SDK initialized');
     return true;
   } catch (err) {
-    console.warn('Firebase Admin SDK initialization failed:', err.message);
+    console.warn('❌ Firebase Admin SDK initialization failed:', err.message);
     return false;
   }
 };

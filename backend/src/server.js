@@ -40,6 +40,13 @@ const corsOptions = {
 
 // Middleware
 app.use(helmet());
+
+// Temporary debug — remove after fix
+app.use((req, res, next) => {
+  console.log(`[${req.method}] ${req.path} | Origin: ${req.headers.origin}`);
+  next();
+});
+
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Handle preflight for all routes BEFORE rate limiter
 app.use(express.json());
