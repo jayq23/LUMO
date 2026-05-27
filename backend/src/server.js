@@ -13,24 +13,37 @@ import helmet from 'helmet';
 import { initializeFirebase } from './controllers/oauthController.js';
 
 dotenv.config();
-
-// Initialize Firebase Admin SDK for OAuth
 initializeFirebase();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Parse allowed origins from env (comma-separated)
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map(o => o.trim());
 
-// Middleware  
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. mobile apps, curl, Render health checks)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`❌ CORS blocked: ${origin}`);
+      callback(new Error(`CORS policy: origin ${origin} is not allowed`));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+// Middleware
 app.use(helmet());
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  credentials: true
-}));
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Handle preflight for all routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Apply global rate limiting
 app.use(globalLimiter);
 
 // Routes
@@ -50,6 +63,7 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Allowed origins: ${allowedOrigins.join(', ')}`);
   console.log(`Health check: http://localhost:${PORT}/api/health`);
 });
