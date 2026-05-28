@@ -43,11 +43,29 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
     const transactions = transactionsResult.rows || [];
 
     // 3. All budgets
-    const budgetsResult = await pool.query(
-      'SELECT id, category, limit_amount, spent_amount, month, year FROM budgets WHERE user_id = $1 ORDER BY year DESC, month DESC',
-      [userId]
-    );
-    const budgets = budgetsResult.rows || [];
+    let budgets = [];
+    try {
+      const budgetsResult = await pool.query(
+        `SELECT id, category, limit_amount, 
+                COALESCE(spent_amount, 0) as spent_amount, 
+                month, year FROM budgets WHERE user_id = $1 ORDER BY year DESC, month DESC`,
+        [userId]
+      );
+      budgets = budgetsResult.rows || [];
+    } catch (budgetErr) {
+      // If spent_amount column doesn't exist, try without it
+      console.warn('⚠️  Budget query failed, trying alternate schema:', budgetErr.message);
+      try {
+        const budgetsResult = await pool.query(
+          'SELECT id, category, limit_amount, 0 as spent_amount, month, year FROM budgets WHERE user_id = $1 ORDER BY year DESC, month DESC',
+          [userId]
+        );
+        budgets = budgetsResult.rows || [];
+      } catch (err2) {
+        console.warn('⚠️  Budgets table not accessible:', err2.message);
+        budgets = [];
+      }
+    }
 
     // 4. Calculate totals
     const totalIncome = transactions
