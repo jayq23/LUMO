@@ -11,6 +11,7 @@ import aiRoutes from './routes/ai.js';
 import oauthRoutes from './routes/oauth.js';
 import helmet from 'helmet';
 import { initializeFirebase } from './controllers/oauthController.js';
+import initializeDatabase from './db/auto-migrate.js';
 
 dotenv.config();
 initializeFirebase();
@@ -41,6 +42,10 @@ const corsOptions = {
 // Middleware
 app.use(helmet());
 
+// Trust proxy - required for Render/Heroku behind reverse proxy
+// This allows express-rate-limit to correctly identify client IPs
+app.set('trust proxy', 1);
+
 // Temporary debug — remove after fix
 app.use((req, res, next) => {
   console.log(`[${req.method}] ${req.path} | Origin: ${req.headers.origin}`);
@@ -69,8 +74,21 @@ app.use((req, res) => {
 // Error handling (must be last)
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Allowed origins: ${allowedOrigins.join(', ')}`);
-  console.log(`Health check: http://localhost:${PORT}/api/health`);
-});
+// Start server with database initialization
+async function startServer() {
+  try {
+    // Initialize database on startup
+    await initializeDatabase();
+    
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+      console.log(`Allowed origins: ${allowedOrigins.join(', ')}`);
+      console.log(`Health check: http://localhost:${PORT}/api/health`);
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  }
+}
+
+startServer();

@@ -24,8 +24,9 @@ function Login() {
     const darkModeEnabled = savedTheme === "dark";
     document.documentElement.setAttribute("data-theme", darkModeEnabled ? "dark" : "light");
     setIsDarkMode(darkModeEnabled);
-    // Wake up Render
-    fetch('https://lumo-5f41.onrender.com/api/health').catch(() => {})
+    // Wake up Render - use configured API URL
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    fetch(`${apiUrl}/health`).catch(() => {})
   }, []);
 
   if (user) {
