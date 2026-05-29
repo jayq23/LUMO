@@ -14,11 +14,11 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 22px 24px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 .panel h2,
@@ -192,12 +192,13 @@
 .setting-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0;
-  border-radius: 14px;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
   background: var(--surface-2);
   border: 1px solid var(--border);
   overflow: hidden;
+  min-height: 56px;
 }
 
 .setting-row input {
@@ -235,9 +236,10 @@
 .setting-copy {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 10px 12px;
+  gap: 3px;
+  padding: 0;
   flex: 1;
+  min-width: 0;
 }
 
 .setting-copy strong {
@@ -253,22 +255,25 @@
 }
 
 .setting-chip {
-  padding: 6px 10px;
-  border-radius: 999px;
+  padding: 6px 12px;
+  border-radius: 8px;
   background: var(--accent-glow);
   color: var(--accent);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
   flex-shrink: 0;
+  height: 32px;
+  display: flex;
+  align-items: center;
 }
 
 .setting-select {
-  padding: 6px 10px;
-  border-radius: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
   background: var(--accent-glow);
   color: var(--accent);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   border: none;
   cursor: pointer;
@@ -277,13 +282,16 @@
   padding-right: 24px;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f0a500' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
-  background-position: right 4px center;
-  background-size: 16px;
-  padding-right: 22px;
+  background-position: right 6px center;
+  background-size: 14px;
+  padding-right: 24px;
+  height: 32px;
+  display: flex;
+  align-items: center;
 }
 
 .switch {
-  width: 46px;
+  width: 48px;
   height: 28px;
   border-radius: 999px;
   background: var(--surface-2);
@@ -291,6 +299,8 @@
   padding: 3px;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
 }
 
 .switch-on {

@@ -62,6 +62,7 @@ function Settings() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme') === 'dark' ? 'Dark' : 'Light');
   
   // Edit profile state
   const [editName, setEditName] = useState(user?.name || '');
@@ -231,6 +232,7 @@ const themeOptions = ['Light', 'Dark'];
   };
 
   const changeTheme = (theme) => {
+    setCurrentTheme(theme);
     const isDark = theme === 'Dark';
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
@@ -679,7 +681,7 @@ const themeOptions = ['Light', 'Dark'];
               <SettingRow
                 title="Theme"
                 description="Choose between light and dark theme."
-                chip={localStorage.getItem('theme') === 'dark' ? 'Dark' : 'Light'}
+                chip={currentTheme}
                 select={themeOptions}
                 onSelect={changeTheme}
               />
