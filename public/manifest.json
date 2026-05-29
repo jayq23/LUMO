@@ -1,7 +1,7 @@
 {
   "name": "Lumo - Expense Tracker",
   "short_name": "Lumo",
-  "description": "Track your expenses and manage your budget with AI-powered insights",
+  "description": "Track your expenses and manage your budget with AI-powered insights and Ai assistant.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
