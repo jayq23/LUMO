@@ -10,6 +10,8 @@ import { formatCurrency } from '../utils/currencyHelper.js';
 import { formatDate, getLanguageCode } from '../utils/languageHelper.js';
 import { useTranslation } from '../utils/translations.js';
 import AddTransactionModal from './AddTransactionModal.jsx';
+import { useSyncOfflineTransactions } from '../utils/useSyncOfflineTransactions.js';
+import { getPendingTransactions } from '../utils/offlineStorage.js';
 
 const CATEGORY_COLORS = {
   food:          "#f0a500",
@@ -45,20 +47,32 @@ function TransactionRow({ t, currency, language }) {
   const isIncome = t.type === "income";
   const amount = `${isIncome ? "+" : "-"}${formatCurrency(t.amount, currency)}`;
   const langCode = getLanguageCode(language);
-  const formattedDate = formatDate(t.transaction_date, langCode);
+  const formattedDate = formatDate(t.transaction_date || t.transactionDate, langCode);
+  const isOffline = t._isOffline;
 
   return (
-    <div className="progress-item" style={{ alignItems: "center", padding: "13px 4px", borderBottom: "1px solid var(--border)" }}>
-      {/* color dot */}
+    <div 
+      className="progress-item" 
+      style={{ 
+        alignItems: "center", 
+        padding: "13px 4px", 
+        borderBottom: "1px solid var(--border)",
+        opacity: isOffline ? 0.7 : 1,
+        backgroundColor: isOffline ? "rgba(255,255,255,0.02)" : "transparent"
+      }}
+    >
+      {/* color dot with offline indicator */}
       <div style={{
         width: 10, height: 10, borderRadius: "50%",
-        background: color, flexShrink: 0
+        background: color, flexShrink: 0,
+        border: isOffline ? "2px dashed rgba(255,255,255,0.5)" : "none"
       }} />
 
       {/* info */}
       <div className="progress-label" style={{ flex: 1 }}>
         <strong>{t.category}</strong>
         <span>{t.description || "No description"}</span>
+        {isOffline && <span style={{ color: '#f0a500', fontSize: '12px', marginLeft: '4px' }}>⏳ Offline</span>}
       </div>
 
       {/* right side */}
@@ -84,18 +98,44 @@ function Transactions() {
   const [loading, setLoading]   = useState(true);
   const [filter, setFilter]     = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-
-
+  
+  // Sync offline transactions when online
+  useSyncOfflineTransactions(user?.id);
 
   useEffect(() => {
     if (user && isInitialized) loadTransactions();
   }, [user, isInitialized]);
 
+  // Refresh transactions when coming back online
+  useEffect(() => {
+    const handleOnline = () => {
+      if (user) loadTransactions();
+    };
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [user]);
+
   const loadTransactions = async () => {
     setLoading(true);
     try {
+      // Get server transactions
       const data = await api.transactions.getAll(user.id);
-      if (Array.isArray(data)) setTransactions(data);
+      const serverTransactions = Array.isArray(data) ? data : [];
+      
+      // Get offline transactions
+      const offlineTxns = await getPendingTransactions();
+      
+      // Combine: offline first, then server
+      const allTransactions = [
+        ...offlineTxns.map(t => ({
+          ...t,
+          synced: false,
+          _isOffline: true
+        })),
+        ...serverTransactions
+      ];
+      
+      setTransactions(allTransactions);
     } catch (err) {
       console.error("Failed to load transactions:", err);
     } finally {

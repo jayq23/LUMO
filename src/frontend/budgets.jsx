@@ -9,6 +9,8 @@ import { getLanguageCode } from "../utils/languageHelper.js";
 import "../styles/section-pages.css";
 import EmptyState from "./emptyState.jsx";
 import { useTranslation } from "../utils/translations.js";
+import { useSyncOfflineTransactions } from "../utils/useSyncOfflineTransactions.js";
+import { getPendingTransactions } from "../utils/offlineStorage.js";
 
 function BudgetSummaryCard({ label, value, note }) {
   return (
@@ -40,12 +42,24 @@ function Budgets() {
   const [error, setError] = useState('');
   const [deleteLoading, setDeleteLoading] = useState({});
 
+  // Sync offline transactions when online
+  useSyncOfflineTransactions(user?.id);
+
   useEffect(() => {
     if (user && isInitialized) {
       loadBudgets();
       loadTransactions();
     }
   }, [user, isInitialized]);
+
+  // Refresh when coming back online
+  useEffect(() => {
+    const handleOnline = () => {
+      if (user) loadTransactions();
+    };
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [user]);
 
   // Auto-refresh transactions every 2 seconds to sync with added transactions
   useEffect(() => {
@@ -74,10 +88,23 @@ function Budgets() {
 
   const loadTransactions = async () => {
     try {
-      const data = await api.transactions.getAll(user.id);
-      if (Array.isArray(data)) {
-        setTransactions(data);
-      }
+      const serverData = await api.transactions.getAll(user.id);
+      const serverTransactions = Array.isArray(serverData) ? serverData : [];
+      
+      // Get offline transactions
+      const offlineTxns = await getPendingTransactions();
+      
+      // Combine: offline first, then server
+      const allTransactions = [
+        ...offlineTxns.map(t => ({
+          ...t,
+          synced: false,
+          _isOffline: true
+        })),
+        ...serverTransactions
+      ];
+      
+      setTransactions(allTransactions);
     } catch (err) {
       console.error('Failed to load transactions:', err);
     }

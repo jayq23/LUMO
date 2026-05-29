@@ -9,6 +9,8 @@ import { formatDate, getLanguageCode } from "../utils/languageHelper.js";
 import "../styles/section-pages.css";
 import EmptyState from "./emptyState.jsx";
 import { useTranslation } from "../utils/translations.js";
+import { useSyncOfflineTransactions } from "../utils/useSyncOfflineTransactions.js";
+import { getPendingTransactions } from "../utils/offlineStorage.js";
 
 function ReportMetricCard({ label, value, note }) {
   return (
@@ -30,11 +32,23 @@ function Report() {
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Sync offline transactions when online
+  useSyncOfflineTransactions(user?.id);
+
   useEffect(() => {
     if (user && isInitialized) {
       loadData();
     }
   }, [user, isInitialized]);
+
+  // Refresh when coming back online
+  useEffect(() => {
+    const handleOnline = () => {
+      if (user) loadData();
+    };
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [user]);
 
   const loadData = async () => {
     setLoading(true);
@@ -43,8 +57,23 @@ function Report() {
         api.transactions.getAll(user.id),
         api.budgets.getAll(user.id)
       ]);
-      if (Array.isArray(txnData)) setTransactions(txnData);
+      const serverTransactions = Array.isArray(txnData) ? txnData : [];
       if (Array.isArray(budgetData)) setBudgets(budgetData);
+      
+      // Get offline transactions
+      const offlineTxns = await getPendingTransactions();
+      
+      // Combine: offline first, then server
+      const allTransactions = [
+        ...offlineTxns.map(t => ({
+          ...t,
+          synced: false,
+          _isOffline: true
+        })),
+        ...serverTransactions
+      ];
+      
+      setTransactions(allTransactions);
     } catch (err) {
       console.error('Failed to load report data:', err);
     } finally {

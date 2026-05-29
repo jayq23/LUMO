@@ -11,6 +11,7 @@ import { formatCurrency } from '../utils/currencyHelper.js';
 import { formatDate, getLanguageCode } from '../utils/languageHelper.js';
 import { useTranslation } from '../utils/translations.js';
 import { useSyncOfflineTransactions } from '../utils/useSyncOfflineTransactions.js';
+import { getPendingTransactions } from '../utils/offlineStorage.js';
 import '../styles/dashboard.css';
 import EmptyState from './emptyState.jsx';
 
@@ -64,14 +65,15 @@ function TransactionRow({ t, currency, language }) {
   const color  = getCategoryColor(t.category);
   const amount = `${isIncome ? '+' : '-'}${formatCurrency(t.amount, currency)}`;
   const langCode = getLanguageCode(language);
-  const formattedDate = formatDate(t.transaction_date, langCode);
+  const formattedDate = formatDate(t.transaction_date || t.transactionDate, langCode);
+  const isOffline = t._isOffline;
 
   return (
-    <div className="txn-row">
-      <div className="txn-dot" style={{ background: color }} />
+    <div className="txn-row" style={{ opacity: isOffline ? 0.7 : 1 }}>
+      <div className="txn-dot" style={{ background: color, border: isOffline ? '2px dashed rgba(255,255,255,0.5)' : 'none' }} />
       <div className="txn-info">
         <span className="txn-name">{t.category}</span>
-        <span className="txn-category">{t.description || 'No description'}</span>
+        <span className="txn-category">{t.description || 'No description'}{isOffline && ' ⏳'}</span>
       </div>
       <div className="txn-right">
         <span className={`txn-amount ${isIncome ? 'income' : 'expense'}`}>{amount}</span>
@@ -101,11 +103,36 @@ function Dashboard() {
   useEffect(() => {
     if (user && isInitialized) loadTransactions();
   }, [user, isInitialized]);
+// Refresh transactions when coming back online
+  useEffect(() => {
+    const handleOnline = () => {
+      if (user) loadTransactions();
+    };
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [user]);
 
   const loadTransactions = async () => {
     setLoading(true);
     try {
+      // Get server transactions
       const data = await api.transactions.getAll(user.id);
+      const serverTransactions = Array.isArray(data) ? data : [];
+      
+      // Get offline transactions
+      const offlineTxns = await getPendingTransactions();
+      
+      // Combine: offline first, then server
+      const allTransactions = [
+        ...offlineTxns.map(t => ({
+          ...t,
+          synced: false,
+          _isOffline: true
+        })),
+        ...serverTransactions
+      ];
+      
+      setTransactions(allTransactionser.id);
       if (Array.isArray(data)) setTransactions(data);
     } catch (err) {
       console.error('Failed to load transactions:', err);
