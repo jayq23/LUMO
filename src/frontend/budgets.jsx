@@ -44,21 +44,19 @@ function Budgets() {
   useSyncOfflineTransactions(user?.id);
 
   useEffect(() => {
-    const refreshData = async () => {
-      if (user && isInitialized) {
-        // Load both together so the progress bars update perfectly
-        await Promise.all([loadBudgets(), loadTransactions()]);
-      }
-    };
+  const refreshData = async (isInitial = false) => {
+    if (user && isInitialized) {
+      // Pass the flag to loadBudgets
+      await Promise.all([loadBudgets(isInitial), loadTransactions()]);
+    }
+  };
 
-    // Run once immediately on load
-    refreshData();
+  refreshData(true); // First run shows loading state
 
-    // Then run every 5 seconds to keep it fresh
-    const interval = setInterval(refreshData, 5000); 
-    
-    return () => clearInterval(interval);
-  }, [user, isInitialized]);
+  const interval = setInterval(() => refreshData(false), 5000); // Background runs are silent
+  
+  return () => clearInterval(interval);
+}, [user, isInitialized]);
 
   useEffect(() => {
     const handleOnline = () => {
@@ -68,20 +66,20 @@ function Budgets() {
     return () => window.removeEventListener('online', handleOnline);
   }, [user]);
 
-  const loadBudgets = async () => {
-    setLoading(true);
-    try {
-      const data = await api.budgets.getAll(user.id);
-      if (Array.isArray(data)) {
-        setBudgets(data);
-      }
-    } catch (err) {
-      console.error('Failed to load budgets:', err);
-      setError('Failed to load budgets');
-    } finally {
-      setLoading(false);
+  const loadBudgets = async (isInitialLoad = false) => {
+  if (isInitialLoad) setLoading(true); // Only show "Loading..." on the first run
+  try {
+    const data = await api.budgets.getAll(user.id);
+    if (Array.isArray(data)) {
+      setBudgets(data);
     }
-  };
+  } catch (err) {
+    console.error('Failed to load budgets:', err);
+    setError('Failed to load budgets');
+  } finally {
+    if (isInitialLoad) setLoading(false);
+  }
+};
 
   const loadTransactions = async () => {
     try {
@@ -376,9 +374,9 @@ function Budgets() {
               <PiggyBank size={18} color="var(--accent)" />
             </div>
 
-            {loading ? (
-              <p>{t('common.loading')}</p>
-            ) : budgets.length > 0 ? (
+            {(loading && budgets.length === 0) ? (
+            <p>{t('common.loading')}</p>
+              ) : budgets.length > 0 ? (
               <div>
                 {budgets.map(b => {
                   let budgetKey = (b.category || '').toLowerCase().trim();
