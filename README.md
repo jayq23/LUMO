@@ -1,4 +1,4 @@
-# 💰 Expense Tracker
+# lumo a Expense Tracker
 
 A modern, easy-to-use expense tracking application to manage your finances with budgeting, analytics, and AI-powered insights.
 
@@ -102,7 +102,7 @@ Your data is safe with us:
 
 ---
 
-## 📱 Device Support
+## Device Support
 
 Works on:
 - 💻 Desktop computers
@@ -112,7 +112,7 @@ Works on:
 
 ---
 
-## 🆘 Need Help?
+## Need Help?
 
 ### Common Questions
 
@@ -145,24 +145,7 @@ A: Yes! Click on any transaction to edit or delete it.
 
 ---
 
-## 📞 Support & Contact
-
-- 📧 **Email:** support@expensetracker.app
-- 💬 **Chat:** Available in app settings
-- 🐛 **Report Issues:** Click "Help" in settings
-- 💡 **Suggestions:** We'd love your feedback!
-
----
-
-## 📜 Legal
-
-- 📋 **Privacy Policy:** [Read here](privacy-policy)
-- ⚖️ **Terms of Service:** [Read here](terms-of-service)
-- 📄 **License:** MIT License
-
----
-
-## 🎉 Start Tracking Today!
+## Start Tracking Today!
 
 Ready to take control of your finances?
 
@@ -170,7 +153,7 @@ Ready to take control of your finances?
 
 ---
 
-## 💡 Tips & Tricks
+## ips & Tricks
 
 ### Make the Most of Your App
 
@@ -196,7 +179,7 @@ Ready to take control of your finances?
 
 ---
 
-## 🌟 Why Choose Expense Tracker?
+## Why Choose Expense Tracker?
 
 ✅ **Simple** - Easy to understand and use
 ✅ **Secure** - Your data is encrypted & protected
@@ -208,6 +191,6 @@ Ready to take control of your finances?
 
 ---
 
-**Made with ❤️ for better financial management**
+**Made for better financial management**
 
-Ready to get started? [Sign Up Now](https://expensetracker.vercel.app)
+Ready to get started? [Sign Up Now](https://lumo-funds.vercel.app)
