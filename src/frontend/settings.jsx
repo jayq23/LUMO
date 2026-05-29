@@ -630,18 +630,6 @@ const languageOptions = [
 
             <div className="setting-column">
               <SettingRow
-                title="Two-factor authentication"
-                description="Add an extra layer of security to your account."
-                switchOn={localPreferences.twoFactorAuth}
-                onToggle={() => togglePreference('twoFactorAuth')}
-              />
-              <SettingRow
-                title="Session alerts"
-                description="Get notified of login activity from new devices."
-                switchOn={localPreferences.sessionAlerts}
-                onToggle={() => togglePreference('sessionAlerts')}
-              />
-              <SettingRow
                 title="Password reset"
                 description="Update your password and recovery options."
                 action={t('settings.updatePassword')}
@@ -687,25 +675,13 @@ const languageOptions = [
           <div className="panel">
             <div className="panel-header">
               <div>
-                <h2>{t('settings.connectedTools')}</h2>
-                <small>{t('settings.integrateServices')}</small>
+                <h2>{t('settings.language')}</h2>
+                <small>{t('settings.selectLanguage')}</small>
               </div>
-              <RefreshCcw size={18} color="var(--accent)" />
+              <Palette size={18} color="var(--accent)" />
             </div>
 
             <div className="setting-column">
-              <SettingRow
-                title={t('settings.cloudBackup')}
-                description={t('settings.cloudBackupDescription')}
-                switchOn={localPreferences.cloudBackup}
-                onToggle={() => togglePreference('cloudBackup')}
-              />
-              <SettingRow
-                title={t('settings.bankSync')}
-                description={t('settings.bankSyncDescription')}
-                switchOn={localPreferences.bankSync}
-                onToggle={() => togglePreference('bankSync')}
-              />
               <SettingRow
                 title={t('settings.language')}
                 description={t('settings.selectLanguage')}
