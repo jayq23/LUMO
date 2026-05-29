@@ -12,7 +12,8 @@ export const languages = {
   ko: 'Korean',
   ru: 'Russian',
   ar: 'Arabic',
-  pt: 'Portuguese'
+  pt: 'Portuguese',
+  fil: 'Filipino'
 };
 
 export const getLanguageName = (code) => {

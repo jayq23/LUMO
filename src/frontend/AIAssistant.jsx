@@ -6,7 +6,9 @@ import { useAuth } from '../auth/AuthContext.jsx';
 import '../styles/ai-assistant.css';
 
 export default function AIAssistant({ transactions = [] }) {
-  const { user, isInitialized } = useAuth();
+  const { user, isInitialized, preferences } = useAuth();
+  const currency = preferences.currency;
+  const language = preferences.language;
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
@@ -66,8 +68,8 @@ export default function AIAssistant({ transactions = [] }) {
       // Get comprehensive data with all system info
       const { systemData } = systemDataResponse;
 
-      // Get AI response with full context
-      const result = await groq.askAboutExpenses(input, systemData.transactions, systemData.summary);
+      // Get AI response with full context and user preferences
+      const result = await groq.askAboutExpenses(input, systemData.transactions, systemData.summary, currency, language);
 
       const botMessage = {
         id: Date.now() + 1,
