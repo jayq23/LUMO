@@ -21,7 +21,7 @@ function BudgetSummaryCard({ label, value, note }) {
     </div>
   );
 }
-const Category = {'Groceries': 'Foods', 'Dining': 'Foods', 'Restaurants': 'Foods', 'Transport': 'Transport', 'Taxi': 'Transport', 'Bus': 'Transport', 'Train': 'Transport', 'Shopping': 'Shopping', 'Clothing': 'Shopping', 'Electronics': 'Shopping', 'Subscriptions': 'Subscriptions', 'Health': 'Health', 'Utilities': 'Utilities'};
+const Category = {'Groceries': 'foods', 'Dining': 'foods', 'Restaurants': 'foods', 'Transport': 'Transport', 'Taxi': 'Transport', 'Bus': 'Transport', 'Train': 'Transport', 'Shopping': 'Shopping', 'Clothing': 'Shopping', 'Electronics': 'Shopping', 'Subscriptions': 'Subscriptions', 'Health': 'Health', 'Utilities': 'Utilities'};
 function Budgets() {
   const { user, isInitialized, preferences } = useAuth();
   const currency = preferences.currency;
@@ -209,12 +209,15 @@ function Budgets() {
 
  const spentByCategory = {};
   monthTransactions.forEach(t => {
-    // This removes spaces and ignores Capital letters
-    const rawCategory = t.category || 'uncategorized';
-    const cleanCategory = (Category[rawCategory] || rawCategory).toLowerCase().trim();
-    
-    spentByCategory[cleanCategory] = (spentByCategory[cleanCategory] || 0) + parseFloat(t.amount);
-  });
+  const rawCat = t.category || 'uncategorized';
+  
+  let cleanKey = rawCat.toLowerCase().trim();
+  if (cleanKey.endsWith('s')) {
+    cleanKey = cleanKey.slice(0, -1);
+  }
+
+  spentByCategory[cleanKey] = (spentByCategory[cleanKey] || 0) + parseFloat(t.amount);
+});
   //  Calculate total spent and remaining budget for the month
   const totalSpent = monthTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
   const totalRemaining = totalBudgeted - totalSpent;
@@ -378,10 +381,13 @@ function Budgets() {
             ) : budgets.length > 0 ? (
               <div>
                 {budgets.map(b => {
-                  const cleanKey = (b.category || '').toLowerCase().trim();
-                  const categorySpent = spentByCategory[cleanKey] || 0;
-                  const limit = parseFloat(b.limit_amount) || 0;
-                  const percentage = limit > 0 ? ((categorySpent / limit) * 100).toFixed(0) : 0;
+                  let budgetKey = (b.category || '').toLowerCase().trim();
+                    if (budgetKey.endsWith('s')) {
+                       budgetKey = budgetKey.slice(0, -1);
+                      }
+                    const categorySpent = spentByCategory[budgetKey] || 0;
+                    const limit = parseFloat(b.limit_amount) || 0;
+                    const percentage = limit > 0 ? ((categorySpent / limit) * 100).toFixed(0) : 0;
                   return (
                     <div key={b.id} style={{ padding: '1rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
                       <div style={{ flex: 1 }}>
