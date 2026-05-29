@@ -671,6 +671,19 @@ const themeOptions = ['Light', 'Dark'];
                 switchOn={localPreferences.autoCategories}
                 onToggle={() => togglePreference('autoCategories')}
               />
+            </div>
+          </div>
+
+          <div className="panel">
+            <div className="panel-header">
+              <div>
+                <h2>Appearance</h2>
+                <small>Customize how Lumo looks</small>
+              </div>
+              <Palette size={18} color="var(--accent)" />
+            </div>
+
+            <div className="setting-column">
               <SettingRow
                 title="Currency"
                 description="Display all amounts in your preferred currency."
