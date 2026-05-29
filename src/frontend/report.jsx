@@ -98,22 +98,27 @@ function Report() {
     if (monthTransactions.length === 0) return null;
 
     const totalSpent = monthTransactions.reduce((sum, t) => {
-      const type = t.type || 'expense';
-      return sum + (type === 'expense' ? parseFloat(t.amount) : 0);
+      const isExpense = (t.type?.toLowerCase().trim() || 'expense') === 'expense';
+      const amount = parseFloat(t.amount) || 0;
+      return isExpense ? sum + amount : sum;
     }, 0);
     
     const categoryTotals = {};
     monthTransactions.forEach(t => {
-      const type = t.type || 'expense';
-      if (type === 'expense') {
-        categoryTotals[t.category] = (categoryTotals[t.category] || 0) + parseFloat(t.amount);
-      }
-    });
-    
-    const topCategory = Object.entries(categoryTotals).sort(([, a], [, b]) => b - a)[0];
+    const isExpense = (t.type?.toLowerCase().trim() || 'expense') === 'expense';
+    if (isExpense) {
+      // Clean the category name: lowercase and trim whitespace
+      const cleanCat = (t.category || 'uncategorized').toLowerCase().trim();
+      categoryTotals[cleanCat] = (categoryTotals[cleanCat] || 0) + (parseFloat(t.amount) || 0);
+    }
+  });
+
+    const topCategoryEntry = Object.entries(categoryTotals).sort(([, a], [, b]) => b - a)[0];
 
     //  divide by expense-only count, not all transactions (which included income)
-    const expenseTransactions = monthTransactions.filter(t => (t.type || 'expense') === 'expense');
+    const expenseTransactions = monthTransactions.filter(t => 
+    (t.type?.toLowerCase().trim() || 'expense') === 'expense'
+    );
     const avgSpend = expenseTransactions.length > 0 ? (totalSpent / expenseTransactions.length).toFixed(2) : 0;
     
     const currentMonthBudgets = budgets.filter(b => {
@@ -146,8 +151,8 @@ function Report() {
 
     return {
       monthlySpent: totalSpent.toFixed(2),
-      topCategory: topCategory ? topCategory[0] : null,
-      topCategoryAmount: topCategory ? topCategory[1].toFixed(2) : 0,
+      topCategory: topCategoryEntry ? topCategoryEntry[0] : null,
+      topCategoryAmount: topCategoryEntry ? topCategoryEntry[1].toFixed(2) : 0,
       avgSpend,
       savingsRate,
       categoryTotals
@@ -294,7 +299,7 @@ ${transactions.filter(t => {
           <ReportMetricCard 
             label={t('reports.topCategory')} 
             value={metrics ? (metrics.topCategory ? metrics.topCategory : "—") : "—"} 
-            note={metrics ? (metrics.topCategory ? formatCurrency(metrics.topCategoryAmount, currency) : "No expenses recorded") : t('reports.loading')} 
+            note={metrics ? (metrics.topCategory ? formatCurrency(metrics.topCategoryAmount, currency) : t('reports.topCategoryNote')) : t('reports.loading')} 
           />
           <ReportMetricCard 
             label={t('reports.averageTransaction')}

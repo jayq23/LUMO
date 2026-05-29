@@ -158,7 +158,7 @@ export const translations = {
       monthlySummaryDescription: 'Summary of all transactions this month',
       csvTransactions: 'CSV of Transactions',
       csvTransactionsDescription: 'Detailed CSV export of all transactions',
-      topCategory: 'No expenses recorded',
+      topCategoryNote: 'Expenses recorded',
       budgetRemainingNote: 'Remaining budget',
       budgetOverNote: 'Over budget',
       insightOverspend: 'Watch out—you\'ve overspent by {{amount}}%.',

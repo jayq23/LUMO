@@ -45,10 +45,20 @@ function Budgets() {
   useSyncOfflineTransactions(user?.id);
 
   useEffect(() => {
-    if (user && isInitialized) {
-      loadBudgets();
-      loadTransactions();
-    }
+    const refreshData = async () => {
+      if (user && isInitialized) {
+        // Load both together so the progress bars update perfectly
+        await Promise.all([loadBudgets(), loadTransactions()]);
+      }
+    };
+
+    // Run once immediately on load
+    refreshData();
+
+    // Then run every 5 seconds to keep it fresh
+    const interval = setInterval(refreshData, 5000); 
+    
+    return () => clearInterval(interval);
   }, [user, isInitialized]);
 
   useEffect(() => {
@@ -58,15 +68,6 @@ function Budgets() {
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
   }, [user]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (user && isInitialized) {
-        loadTransactions();
-      }
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [user, isInitialized]);
 
   const loadBudgets = async () => {
     setLoading(true);
@@ -207,13 +208,16 @@ function Budgets() {
            t.type === 'expense';
   });
 
-  const spentByCategory = {};
+ const spentByCategory = {};
   monthTransactions.forEach(t => {
-    const mappedCategory = Category[t.category] || t.category.toLowerCase();
-    spentByCategory[mappedCategory] = (spentByCategory[mappedCategory] || 0) + parseFloat(t.amount);
+    // This removes spaces and ignores Capital letters
+    const rawCategory = t.category || 'uncategorized';
+    const cleanCategory = (Category[rawCategory] || rawCategory).toLowerCase().trim();
+    
+    spentByCategory[cleanCategory] = (spentByCategory[cleanCategory] || 0) + parseFloat(t.amount);
   });
-
-  const totalSpent = Object.values(spentByCategory).reduce((sum, amount) => sum + amount, 0);
+  //  Calculate total spent and remaining budget for the month
+  const totalSpent = monthTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
   const totalRemaining = totalBudgeted - totalSpent;
 
   return (
@@ -375,8 +379,10 @@ function Budgets() {
             ) : budgets.length > 0 ? (
               <div>
                 {budgets.map(b => {
-                  const categorySpent = spentByCategory[b.category.toLowerCase()] || 0;
-                  const percentage = (categorySpent / parseFloat(b.limit_amount) * 100).toFixed(0);
+                  const cleanKey = (b.category || '').toLowerCase().trim();
+                  const categorySpent = spentByCategory[cleanKey] || 0;
+                  const limit = parseFloat(b.limit_amount) || 0;
+                  const percentage = limit > 0 ? ((categorySpent / limit) * 100).toFixed(0) : 0;
                   return (
                     <div key={b.id} style={{ padding: '1rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
                       <div style={{ flex: 1 }}>
