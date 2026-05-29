@@ -26,7 +26,7 @@ export const schemas = {
     userId: Joi.number().required(),
     category: Joi.string().max(100).required(),
     amount: Joi.number().positive().required(),
-    description: Joi.string().max(500),
+    description: Joi.string().max(500).allow('').optional(),
     transactionDate: Joi.date(),
     type: Joi.string().valid('income', 'expense').required(),
   }),
