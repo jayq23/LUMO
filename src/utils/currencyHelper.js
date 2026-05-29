@@ -15,11 +15,16 @@ export const currencySymbols = {
 };
 
 
-export const formatCurrency = (amount, currency = 'USD') => {
-  const symbol = currencySymbols[currency] || '$';
-  return `${symbol}${parseFloat(amount).toFixed(2)}`;
+export const formatCurrency = (amount, currency = 'PHP') => {
+  const symbol = currencySymbols[currency] || '₱';
+  const number = parseFloat(amount);
+  const formatted = number.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return `${symbol}${formatted}`;
 };
 
-export const getCurrencySymbol = (currency = 'USD') => {
-  return currencySymbols[currency] || '$';
+export const getCurrencySymbol = (currency = 'PHP') => {
+  return currencySymbols[currency] || '₱';
 };

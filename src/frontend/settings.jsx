@@ -81,14 +81,14 @@ function Settings() {
   // Currency and Language options
 const currencyOptions = [
   'USD', 
-  'MXN', 
+//  'MXN', 
   'EUR', 
-  'CNY',
-  'JPY', 
-  'KRW', 
-  'RUB', 
-  'SAR', 
-  'BRL',
+ // 'CNY',
+ // 'JPY', 
+ // 'KRW', 
+ // 'RUB', 
+ // 'SAR', 
+//  'BRL',
   'PHP',
 ];
 const languageOptions = [
