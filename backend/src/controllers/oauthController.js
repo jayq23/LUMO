@@ -60,16 +60,31 @@ export const socialLogin = async (req, res, next) => {
 
     const { uid, email, name } = decodedToken;
 
-    if (!email) {
-      return res.status(400).json({ error: 'Email not available from provider' });
+    // Facebook might not return email even if user granted permission
+    // Generate fallback email using provider + uid
+    const userEmail = email || `${provider}_${uid}@${provider}.local`;
+    
+    console.log('🔐 OAuth login:', {
+      provider,
+      uid: uid?.substring(0, 10) + '...',
+      email: userEmail,
+      hasFirebaseEmail: !!email,
+      nameFromProvider: name
+    });
+
+    if (!userEmail) {
+      return res.status(400).json({ error: 'Unable to determine user identity from provider' });
     }
 
     // Check if user already exists
-    let user = await userModel.getUserByEmail(email);
+    let user = await userModel.getUserByEmail(userEmail);
 
     if (!user) {
       // Create new user with OAuth (no password)
-      user = await userModel.createOAuthUser(email, name || email.split('@')[0], provider, uid);
+      user = await userModel.createOAuthUser(userEmail, name || userEmail.split('@')[0], provider, uid);
+      console.log('✅ New OAuth user created:', { userId: user.id, provider, email: userEmail });
+    } else {
+      console.log('✅ Existing OAuth user logged in:', { userId: user.id, provider });
     }
 
     // Generate backend JWT token
