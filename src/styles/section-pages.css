@@ -325,9 +325,10 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   padding: 12px 0;
   border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
 }
 
 .summary-row:last-child {
@@ -358,8 +359,10 @@
   font-size: 12px;
   font-weight: 600;
   text-align: right;
-  white-space: nowrap;
-  flex-shrink: 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  flex-shrink: 1;
+  max-width: 50%;
 }
 
 .empty-state {
@@ -516,7 +519,12 @@
     align-self: flex-end;
   }
 
-  .summary-row,
+  .summary-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
   .progress-item,
   .transaction-item,
   .report-row {
@@ -536,6 +544,10 @@
 
   .summary-value {
     white-space: normal;
+    word-break: break-word;
+    text-align: left;
+    max-width: 100%;
+    width: 100%;
   }
 
   .action-row .ghost-btn,
