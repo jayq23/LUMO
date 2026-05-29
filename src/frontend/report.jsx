@@ -75,13 +75,17 @@ function Report() {
 
     // Calculate total spent and by category
     const totalSpent = monthTransactions.reduce((sum, t) => {
-      return sum + (t.type === 'expense' ? parseFloat(t.amount) : 0);
+      // Default to 'expense' if type is missing (for backward compatibility)
+      const type = t.type || 'expense';
+      return sum + (type === 'expense' ? parseFloat(t.amount) : 0);
     }, 0);
     
     // Calculate by category
     const categoryTotals = {};
     monthTransactions.forEach(t => {
-      if (t.type === 'expense') {
+      // Default to 'expense' if type is missing
+      const type = t.type || 'expense';
+      if (type === 'expense') {
         categoryTotals[t.category] = (categoryTotals[t.category] || 0) + parseFloat(t.amount);
       }
     });
@@ -97,7 +101,7 @@ function Report() {
     let savingsRate;
     if (currentMonthBudgets.length === 0) {
       // No budgets set for this month
-      savingsRate = 'N/A';
+      savingsRate = null;
     } else {
       // Calculate category-by-category budget vs spending
       let totalBudgeted = 0;
@@ -114,16 +118,16 @@ function Report() {
       
       // Calculate percentage of budget remaining
       if (totalBudgeted > 0) {
-        const remainingPercent = ((totalRemaining / totalBudgeted) * 100).toFixed(0);
+        const remainingPercent = parseFloat(((totalRemaining / totalBudgeted) * 100).toFixed(0));
         savingsRate = Math.max(-100, remainingPercent); // Allow negative for overspend
       } else {
-        savingsRate = 'N/A';
+        savingsRate = null;
       }
     }
 
     return {
       monthlySpent: totalSpent.toFixed(2),
-      topCategory: topCategory ? topCategory[0] : 'N/A',
+      topCategory: topCategory ? topCategory[0] : null,
       topCategoryAmount: topCategory ? topCategory[1].toFixed(2) : 0,
       avgSpend,
       savingsRate,
@@ -159,15 +163,20 @@ function Report() {
     
     const insights = [];
     
-    if (metrics.savingsRate >= 20) {
-      insights.push(`✓ Great job! You're saving ${metrics.savingsRate}% of your budget.`);
-    } else if (metrics.savingsRate >= 0) {
-      insights.push(`◆ You're on budget with ${metrics.savingsRate}% remaining.`);
-    } else {
-      insights.push(`⚠ Watch out—you've spent ${Math.abs(metrics.savingsRate)}% over budget.`);
+    // Only generate budget insights if savingsRate is a number
+    if (typeof metrics.savingsRate === 'number') {
+      if (metrics.savingsRate >= 20) {
+        insights.push(`✓ Great job! You're saving ${metrics.savingsRate}% of your budget.`);
+      } else if (metrics.savingsRate >= 0) {
+        insights.push(`◆ You're on budget with ${metrics.savingsRate}% remaining.`);
+      } else {
+        insights.push(`⚠ Watch out—you've overspent by ${Math.abs(metrics.savingsRate)}%.`);
+      }
+    } else if (metrics.savingsRate === null) {
+      insights.push(`💡 Create a budget in the Budgets section to track your spending progress.`);
     }
     
-    if (metrics.categoryTotals[metrics.topCategory] > metrics.monthlySpent * 0.4) {
+    if (metrics.monthlySpent > 0 && metrics.topCategory && metrics.categoryTotals[metrics.topCategory] > metrics.monthlySpent * 0.4) {
       insights.push(`◆ ${metrics.topCategory} is your biggest expense this month (${(metrics.categoryTotals[metrics.topCategory] / metrics.monthlySpent * 100).toFixed(0)}%).`);
     }
     
@@ -188,9 +197,9 @@ Expense Report - ${formatDate(new Date().toISOString(), langCode)}
 METRICS:
 --------
 Monthly Spending: ${formatCurrency(metrics.monthlySpent, currency)}
-Top Category: ${metrics.topCategory} (${formatCurrency(metrics.topCategoryAmount, currency)})
+Top Category: ${metrics.topCategory ? metrics.topCategory + ' (' + formatCurrency(metrics.topCategoryAmount, currency) + ')' : 'No expenses yet'}
 Average per Transaction: ${formatCurrency(metrics.avgSpend, currency)}
-Budget Remaining: ${metrics.savingsRate === 'N/A' ? 'N/A (Set a budget to track)' : metrics.savingsRate > 0 ? metrics.savingsRate + '% remaining' : 'OVERSPENT by ' + Math.abs(metrics.savingsRate) + '%'}
+Budget Status: ${metrics.savingsRate === null ? 'No budget set' : (metrics.savingsRate > 0 ? metrics.savingsRate + '% remaining' : 'Over by ' + Math.abs(metrics.savingsRate) + '%')}
 
 TRANSACTIONS:
 --------
@@ -256,8 +265,8 @@ ${transactions.filter(t => {
           />
           <ReportMetricCard 
             label={t('reports.topCategory')} 
-            value={metrics ? metrics.topCategory : "—"} 
-            note={metrics ? formatCurrency(metrics.topCategoryAmount, currency) : t('reports.loading')} 
+            value={metrics ? (metrics.topCategory ? metrics.topCategory : "—") : "—"} 
+            note={metrics ? (metrics.topCategory ? formatCurrency(metrics.topCategoryAmount, currency) : "No expenses recorded") : t('reports.loading')} 
           />
           <ReportMetricCard 
             label={t('reports.averageTransaction')}
@@ -266,8 +275,8 @@ ${transactions.filter(t => {
           />
           <ReportMetricCard 
             label={t('reports.budgetHealth')} 
-            value={metrics ? (metrics.savingsRate === 'N/A' ? 'N/A' : (metrics.savingsRate > 0 ? `${metrics.savingsRate}%` : `−${Math.abs(metrics.savingsRate)}%`)) : "—"} 
-            note={metrics ? (metrics.savingsRate === 'N/A' ? "Set a budget to track" : metrics.savingsRate > 0 ? "Remaining budget" : "OVERSPENT") : t('reports.loading')} 
+            value={metrics ? (metrics.savingsRate === null ? '—' : (metrics.savingsRate > 0 ? `${metrics.savingsRate}%` : `−${Math.abs(metrics.savingsRate)}%`)) : "—"} 
+            note={metrics ? (metrics.savingsRate === null ? "Add a budget to track progress" : metrics.savingsRate > 0 ? "Remaining budget" : "Over budget") : t('reports.loading')} 
           />
         </section>
 
