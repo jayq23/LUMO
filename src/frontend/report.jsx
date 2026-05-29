@@ -61,31 +61,65 @@ function Report() {
   }
 
   const calculateMetrics = () => {
-    if (transactions.length === 0) return null;
-
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
 
+    // Filter transactions for current month
     const monthTransactions = transactions.filter(t => {
       const tDate = new Date(t.transaction_date);
       return tDate.getMonth() + 1 === currentMonth && tDate.getFullYear() === currentYear;
     });
 
-    const totalSpent = monthTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+    if (monthTransactions.length === 0) return null;
+
+    // Calculate total spent and by category
+    const totalSpent = monthTransactions.reduce((sum, t) => {
+      return sum + (t.type === 'expense' ? parseFloat(t.amount) : 0);
+    }, 0);
     
-    // Top category
+    // Calculate by category
     const categoryTotals = {};
     monthTransactions.forEach(t => {
-      categoryTotals[t.category] = (categoryTotals[t.category] || 0) + parseFloat(t.amount);
+      if (t.type === 'expense') {
+        categoryTotals[t.category] = (categoryTotals[t.category] || 0) + parseFloat(t.amount);
+      }
     });
-    const topCategory = Object.entries(categoryTotals).sort(([, a], [, b]) => b - a)[0];
     
+    const topCategory = Object.entries(categoryTotals).sort(([, a], [, b]) => b - a)[0];
     const avgSpend = monthTransactions.length > 0 ? (totalSpent / monthTransactions.length).toFixed(2) : 0;
     
-    // Simplified savings rate (assuming income is 0 for now)
-    const budgetedAmount = budgets.reduce((sum, b) => sum + parseFloat(b.limit_amount), 0);
-    const savingsRate = budgetedAmount > 0 ? Math.max(0, (((budgetedAmount - totalSpent) / budgetedAmount) * 100).toFixed(0)) : 0;
+    // Deep budget calculation for current month
+    const currentMonthBudgets = budgets.filter(b => {
+      return parseInt(b.month) === currentMonth && parseInt(b.year) === currentYear;
+    });
+    
+    let savingsRate;
+    if (currentMonthBudgets.length === 0) {
+      // No budgets set for this month
+      savingsRate = 'N/A';
+    } else {
+      // Calculate category-by-category budget vs spending
+      let totalBudgeted = 0;
+      let totalRemaining = 0;
+      
+      currentMonthBudgets.forEach(budget => {
+        const budgetLimit = parseFloat(budget.limit_amount);
+        const categorySpent = categoryTotals[budget.category] || 0;
+        const remaining = budgetLimit - categorySpent;
+        
+        totalBudgeted += budgetLimit;
+        totalRemaining += remaining;
+      });
+      
+      // Calculate percentage of budget remaining
+      if (totalBudgeted > 0) {
+        const remainingPercent = ((totalRemaining / totalBudgeted) * 100).toFixed(0);
+        savingsRate = Math.max(-100, remainingPercent); // Allow negative for overspend
+      } else {
+        savingsRate = 'N/A';
+      }
+    }
 
     return {
       monthlySpent: totalSpent.toFixed(2),
@@ -156,11 +190,15 @@ METRICS:
 Monthly Spending: ${formatCurrency(metrics.monthlySpent, currency)}
 Top Category: ${metrics.topCategory} (${formatCurrency(metrics.topCategoryAmount, currency)})
 Average per Transaction: ${formatCurrency(metrics.avgSpend, currency)}
-Budget Remaining: ${metrics.savingsRate}%
+Budget Remaining: ${metrics.savingsRate === 'N/A' ? 'N/A (Set a budget to track)' : metrics.savingsRate > 0 ? metrics.savingsRate + '% remaining' : 'OVERSPENT by ' + Math.abs(metrics.savingsRate) + '%'}
 
 TRANSACTIONS:
 --------
-${transactions.map(t => 
+${transactions.filter(t => {
+  const tDate = new Date(t.transaction_date);
+  const now = new Date();
+  return tDate.getMonth() + 1 === now.getMonth() + 1 && tDate.getFullYear() === now.getFullYear();
+}).map(t => 
   `${formatDate(t.transaction_date, langCode)} | ${t.category.padEnd(15)} | ${formatCurrency(parseFloat(t.amount), currency).padStart(8)} | ${t.description}`
 ).join('\n')}
     `;
@@ -228,8 +266,8 @@ ${transactions.map(t =>
           />
           <ReportMetricCard 
             label={t('reports.budgetHealth')} 
-            value={metrics ? `${metrics.savingsRate}%` : "—"} 
-            note={metrics ? "Remaining vs budget" : t('reports.loading')} 
+            value={metrics ? (metrics.savingsRate === 'N/A' ? 'N/A' : (metrics.savingsRate > 0 ? `${metrics.savingsRate}%` : `−${Math.abs(metrics.savingsRate)}%`)) : "—"} 
+            note={metrics ? (metrics.savingsRate === 'N/A' ? "Set a budget to track" : metrics.savingsRate > 0 ? "Remaining budget" : "OVERSPENT") : t('reports.loading')} 
           />
         </section>
 
