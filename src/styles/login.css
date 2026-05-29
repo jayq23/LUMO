@@ -374,11 +374,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #ff6b6b;
+  background: #d9534f;
   color: white;
   padding: 14px 20px;
   border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+  box-shadow: 0 8px 24px rgba(217, 83, 79, 0.25);
   min-width: 280px;
   max-width: 90vw;
 }
@@ -419,20 +419,33 @@
 /* ── Mobile ── */
 @media (max-width: 480px) {
   .error-alert {
-    top: 10px;
-    left: 10px;
-    right: 10px;
+    top: 12px;
+    left: 12px;
+    right: 12px;
     transform: none;
   }
 
   .error-alert-content {
     min-width: auto;
+    padding: 12px 16px;
+    gap: 10px;
+  }
+
+  .error-icon {
+    font-size: 16px;
   }
 
   .error-text {
     font-size: 13px;
+    line-height: 1.3;
   }
-  
+
+  .error-close {
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+  }
+
   .login-page {
     padding: 20px 16px;
     align-items: center;
