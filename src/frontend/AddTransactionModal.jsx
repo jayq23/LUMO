@@ -1,24 +1,26 @@
 import { X, Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '../api/client.js';
-import { formatCurrency } from '../utils/currencyHelper.js';
 import { useTranslation } from '../utils/translations.js';
 import { getLanguageCode } from '../utils/languageHelper.js';
 import { addOfflineTransaction } from '../utils/offlineStorage.js';
 
-const CATEGORIES = ['Food', 'Transport', 'Shopping', 'Subscriptions', 'Health', 'Utilities', 'Other'];
-const categoryIncome= ['Salary', 'Freelance', 'Investments', 'Gifts', 'Other'];
-
 function AddTransactionModal({ userId, onTransactionAdded, language, currency }) {
   const langCode = getLanguageCode(language);
   const t = useTranslation(langCode);
+
+  // Use internal keys that match your translation files
+  const CATEGORIES = ['food', 'transport', 'shopping', 'subscriptions', 'health', 'utilities', 'other'];
+  const CATEGORIES_INCOME = ['salary', 'freelance', 'investments', 'gifts', 'other'];
+
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  
   const [formData, setFormData] = useState({
     type: 'expense',
-    category: 'Food',
+    category: 'food',
     amount: '',
     description: '',
     transactionDate: new Date().toISOString().split('T')[0],
@@ -46,7 +48,7 @@ function AddTransactionModal({ userId, onTransactionAdded, language, currency })
   };
 
   const handleTypeChange = (newType) => {
-    const defaultCategory = newType === 'expense' ? CATEGORIES[0] : categoryIncome[0];
+    const defaultCategory = newType === 'expense' ? CATEGORIES[0] : CATEGORIES_INCOME[0];
     setFormData((prev) => ({
       ...prev,
       type: newType,
@@ -66,79 +68,42 @@ function AddTransactionModal({ userId, onTransactionAdded, language, currency })
         return;
       }
 
+      const payload = {
+        userId,
+        category: formData.category,
+        amount: parseFloat(formData.amount),
+        description: formData.description,
+        transactionDate: formData.transactionDate,
+        type: formData.type
+      };
+
       if (isOnline) {
-        // Online: Send to backend immediately
         const response = await api.transactions.create(
-          userId,
-          formData.category.toLowerCase(),
-          parseFloat(formData.amount),
-          formData.description,
-          formData.transactionDate,
-          formData.type
+          payload.userId,
+          payload.category,
+          payload.amount,
+          payload.description,
+          payload.transactionDate,
+          payload.type
         );
-
-        if (response.error) {
-          setError(response.error);
-        } else {
-          setFormData({
-            type: 'expense',
-            category: 'Food',
-            amount: '',
-            description: '',
-            transactionDate: new Date().toISOString().split('T')[0],
-          });
-          setIsOpen(false);
-          onTransactionAdded();
-        }
+        if (response.error) throw new Error(response.error);
       } else {
-        // Offline: Save to local storage
-        await addOfflineTransaction({
-          userId,
-          category: formData.category.toLowerCase(),
-          amount: parseFloat(formData.amount),
-          description: formData.description,
-          transactionDate: formData.transactionDate,
-          type: formData.type,
-        });
-
-        setFormData({
-          type: 'expense',
-          category: 'Food',
-          amount: '',
-          description: '',
-          transactionDate: new Date().toISOString().split('T')[0],
-        });
-        setIsOpen(false);
-        // Show success even though offline
-        onTransactionAdded();
+        await addOfflineTransaction(payload);
       }
+
+      // Success logic
+      setFormData({
+        type: 'expense',
+        category: 'food',
+        amount: '',
+        description: '',
+        transactionDate: new Date().toISOString().split('T')[0],
+      });
+      setIsOpen(false);
+      onTransactionAdded();
+
     } catch (err) {
-      if (!isOnline) {
-        // If offline and fetch fails, save to local storage as fallback
-        try {
-          await addOfflineTransaction({
-            userId,
-            category: formData.category.toLowerCase(),
-            amount: parseFloat(formData.amount),
-            description: formData.description,
-            transactionDate: formData.transactionDate,
-            type: formData.type,
-          });
-          setFormData({
-            type: 'expense',
-            category: 'Food',
-            amount: '',
-            description: '',
-            transactionDate: new Date().toISOString().split('T')[0],
-          });
-          setIsOpen(false);
-          onTransactionAdded();
-        } catch (storageErr) {
-          setError('Failed to save transaction: ' + storageErr.message);
-        }
-      } else {
-        setError(err.message || 'Failed to add transaction');
-      }
+      setError(err.message || 'Failed to add transaction');
     } finally {
       setLoading(false);
     }
@@ -146,25 +111,17 @@ function AddTransactionModal({ userId, onTransactionAdded, language, currency })
 
   return (
     <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="add-transaction-btn"
-        aria-label="Add transaction"
-      >
+      <button onClick={() => setIsOpen(true)} className="add-transaction-btn">
         <Plus size={18} />
-        Add Transaction
+        {t('transactions.addTransaction')}
       </button>
 
       {isOpen && (
         <div className="modal-overlay" onClick={() => setIsOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Add Transaction</h2>
-              <button
-                className="modal-close"
-                onClick={() => setIsOpen(false)}
-                aria-label="Close"
-              >
+              <h2>{t('transactions.addTransaction')}</h2>
+              <button className="modal-close" onClick={() => setIsOpen(false)}>
                 <X size={20} />
               </button>
             </div>
@@ -173,55 +130,40 @@ function AddTransactionModal({ userId, onTransactionAdded, language, currency })
               {error && <div className="error-message">{error}</div>}
 
               {!isOnline && (
-                <div style={{
-                  padding: '0.75rem',
-                  background: 'rgba(240, 165, 0, 0.1)',
-                  border: '1px solid var(--accent)',
-                  borderRadius: '6px',
-                  marginBottom: '1rem',
-                  fontSize: '0.875rem',
-                  color: 'var(--accent)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <span>📱 Offline Mode - Will sync when online</span>
+                <div className="offline-badge">
+                  <span>📱 {t('common.offlineMode') || 'Offline Mode'}</span>
                 </div>
               )}
 
-              {/* Type Selection */}
               <div className="form-group">
-                <label>Type</label>
+                <label>{t('transactions.type')}</label>
                 <div className="type-buttons">
                   <button
                     type="button"
                     className={`type-btn ${formData.type === 'expense' ? 'active' : ''}`}
                     onClick={() => handleTypeChange('expense')}
                   >
-                    Expense
+                    {t('transactions.expense')}
                   </button>
                   <button
                     type="button"
                     className={`type-btn ${formData.type === 'income' ? 'active' : ''}`}
                     onClick={() => handleTypeChange('income')}
                   >
-                    Income
+                    {t('transactions.income')}
                   </button>
                 </div>
               </div>
 
-              {/* Amount */}
               <div className="form-group">
-                <label htmlFor="amount">Amount</label>
+                <label htmlFor="amount">{t('transactions.amount')}</label>
                 <div className="amount-input">
                   <span className="currency-symbol">{currency}</span>
                   <input
                     type="number"
                     id="amount"
                     name="amount"
-                    placeholder="0.00"
                     step="0.01"
-                    min="0"
                     required
                     value={formData.amount}
                     onChange={handleChange}
@@ -229,32 +171,19 @@ function AddTransactionModal({ userId, onTransactionAdded, language, currency })
                 </div>
               </div>
 
-              {/* Category */}
               <div className="form-group">
-                <label htmlFor="category">Category</label>
-                <select
-                  id="category"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                >
-                  {formData.type === 'expense'
-                    ? CATEGORIES.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))
-                    : categoryIncome.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
+                <label htmlFor="category">{t('transactions.category')}</label>
+                <select id="category" name="category" value={formData.category} onChange={handleChange}>
+                  {(formData.type === 'expense' ? CATEGORIES : CATEGORIES_INCOME).map((cat) => (
+                    <option key={cat} value={cat}>
+                      {t(`transactions.${cat}`)}
+                    </option>
+                  ))}
                 </select>
               </div>
 
-              {/* Date */}
               <div className="form-group">
-                <label htmlFor="date">Date</label>
+                <label htmlFor="date">{t('transactions.date')}</label>
                 <input
                   type="date"
                   id="date"
@@ -265,34 +194,24 @@ function AddTransactionModal({ userId, onTransactionAdded, language, currency })
                 />
               </div>
 
-              {/* Description */}
               <div className="form-group">
-                <label htmlFor="description">Description (optional)</label>
+                <label htmlFor="description">{t('transactions.description')}</label>
                 <input
                   type="text"
                   id="description"
                   name="description"
-                  placeholder="Add notes..."
+                  placeholder={t('transactions.descriptionPlaceholder')}
                   value={formData.description}
                   onChange={handleChange}
                 />
               </div>
 
-              {/* Submit Buttons */}
               <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn-cancel"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Cancel
+                <button type="button" className="btn-cancel" onClick={() => setIsOpen(false)}>
+                  {t('common.cancel')}
                 </button>
-                <button
-                  type="submit"
-                  className="btn-submit"
-                  disabled={loading}
-                >
-                  {loading ? 'Adding...' : 'Add Transaction'}
+                <button type="submit" className="btn-submit" disabled={loading}>
+                  {loading ? '...' : t('transactions.addTransaction')}
                 </button>
               </div>
             </form>

@@ -195,19 +195,31 @@ function Report() {
     // Only generate budget insights if savingsRate is a number
     if (typeof metrics.savingsRate === 'number') {
       if (metrics.savingsRate >= 20) {
-        insights.push(t(`reports.insightPositive`, { amount: metrics.savingsRate }));
-      } else if (metrics.savingsRate >= 0) {
-        insights.push(t(`reports.insightSavingsRate`, { amount: metrics.savingsRate }));
-      } else {
-        insights.push(t(`reports.insightOverspend`, { amount: Math.abs(metrics.savingsRate) }));
-      }
-    } else if (metrics.savingsRate === null) {
-      insights.push(t(`reports.insightCreateBudget`));
+      // Logic for "Great Budget"
+      insights.push(t(`reports.insightGreatBudget`, { amount: metrics.savingsRate }));
+    } else if (metrics.savingsRate >= 0) {
+      // Logic for "Savings Rate"
+      insights.push(t(`reports.insightSavingsRate`, { amount: metrics.savingsRate }));
+    } else {
+      // Logic for "Overspend"
+      insights.push(t(`reports.insightOverspend`, { amount: Math.abs(metrics.savingsRate) }));
     }
-    
-    if (metrics.monthlySpent > 0 && metrics.topCategory && metrics.categoryTotals[metrics.topCategory] > metrics.monthlySpent * 0.4) {
-      insights.push(t(`reports.insightTopCategory`, { category: metrics.topCategory, amount: (metrics.categoryTotals[metrics.topCategory] / metrics.monthlySpent * 100).toFixed(0) }));
-    }
+  } else if (metrics.savingsRate === null) {
+    insights.push(t(`reports.insightCreateBudget`));
+  }
+  
+  // Specific category insight
+  if (metrics.monthlySpent > 0 && metrics.topCategory && metrics.categoryTotals[metrics.topCategory] > metrics.monthlySpent * 0.4) {
+    insights.push(t(`reports.insightTopCategory`, { 
+      category: metrics.topCategory, 
+      amount: (metrics.categoryTotals[metrics.topCategory] / metrics.monthlySpent * 100).toFixed(0) 
+    }));
+  }
+
+  // Fallback if no insights generated but stats are healthy
+  if (insights.length === 0 && metrics.monthlySpent > 0) {
+    insights.push(t('reports.insightPositive'));
+  }
     
     return insights;
   };
