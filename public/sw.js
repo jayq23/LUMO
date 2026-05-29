@@ -3,6 +3,8 @@ const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/logo-192.png',
+  '/logo-512.png',
 ];
 
 // Install event - cache files
@@ -68,31 +70,32 @@ self.addEventListener('fetch', event => {
         })
     );
   } else {
-    // Static assets - cache first, fallback to network
+    // Static assets - network first, then cache
     event.respondWith(
-      caches.match(event.request)
-        .then(cachedResponse => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          return fetch(event.request)
-            .then(response => {
-              // Cache successful responses
-              if (response.status === 200) {
-                const responseClone = response.clone();
-                caches.open(CACHE_NAME).then(cache => {
-                  cache.put(event.request, responseClone);
-                });
-              }
-              return response;
+      fetch(event.request)
+        .then(response => {
+          // Cache successful responses
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseClone);
             });
+          }
+          return response;
         })
         .catch(() => {
-          // Offline fallback
-          return new Response('Offline - resource unavailable', {
-            status: 503,
-            statusText: 'Service Unavailable'
-          });
+          // Network failed - try cache
+          return caches.match(event.request)
+            .then(cachedResponse => {
+              if (cachedResponse) {
+                return cachedResponse;
+              }
+              // Return offline page
+              return new Response(
+                '<h1>You are offline</h1><p>This page was not cached.</p>',
+                { headers: { 'Content-Type': 'text/html' }, status: 503 }
+              );
+            });
         })
     );
   }

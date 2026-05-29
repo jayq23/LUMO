@@ -1,5 +1,5 @@
 {
-  "name": "Lumo",
+  "name": "Lumo - Expense Tracker",
   "short_name": "Lumo",
   "description": "Track your expenses and manage your budget with AI-powered insights",
   "start_url": "/",
@@ -8,6 +8,7 @@
   "orientation": "portrait-primary",
   "background_color": "#0d0f14",
   "theme_color": "#f0a500",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/logo-192.png",
