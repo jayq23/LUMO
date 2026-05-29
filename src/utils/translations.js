@@ -2200,9 +2200,10 @@ export const getTranslation = (key, language = 'en', replacements = {}) => {
     }
   }
 
-  let result = current;
+  let result = current; 
   for (const [placeholder, value] of Object.entries(replacements)) {
-    result = result.replace(`{${placeholder}}`, value);
+    const regex = new RegExp(`{{${placeholder}}}|{${placeholder}}`, 'g');
+    result = result.replace(regex, value);
   }
 
   return result;
