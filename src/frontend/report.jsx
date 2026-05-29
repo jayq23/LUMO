@@ -195,18 +195,18 @@ function Report() {
     // Only generate budget insights if savingsRate is a number
     if (typeof metrics.savingsRate === 'number') {
       if (metrics.savingsRate >= 20) {
-        insights.push(`✓ Great job! You're saving ${metrics.savingsRate}% of your budget.`);
+        insights.push(t(`reports.insightPositive`, { amount: metrics.savingsRate }));
       } else if (metrics.savingsRate >= 0) {
-        insights.push(`◆ You're on budget with ${metrics.savingsRate}% remaining.`);
+        insights.push(t(`reports.insightSavingsRate`, { amount: metrics.savingsRate }));
       } else {
-        insights.push(`⚠ Watch out—you've overspent by ${Math.abs(metrics.savingsRate)}%.`);
+        insights.push(t(`reports.insightOverspend`, { amount: Math.abs(metrics.savingsRate) }));
       }
     } else if (metrics.savingsRate === null) {
-      insights.push(`💡 Create a budget in the Budgets section to track your spending progress.`);
+      insights.push(t(`reports.insightCreateBudget`));
     }
     
     if (metrics.monthlySpent > 0 && metrics.topCategory && metrics.categoryTotals[metrics.topCategory] > metrics.monthlySpent * 0.4) {
-      insights.push(`◆ ${metrics.topCategory} is your biggest expense this month (${(metrics.categoryTotals[metrics.topCategory] / metrics.monthlySpent * 100).toFixed(0)}%).`);
+      insights.push(t(`reports.insightTopCategory`, { category: metrics.topCategory, amount: (metrics.categoryTotals[metrics.topCategory] / metrics.monthlySpent * 100).toFixed(0) }));
     }
     
     return insights;
@@ -290,7 +290,7 @@ ${transactions.filter(t => {
           <ReportMetricCard 
             label={t('reports.monthlySpending')} 
             value={metrics ? formatCurrency(metrics.monthlySpent, currency) : "—"} 
-            note={metrics ? "Total expenses this month" : t('reports.loading')} 
+            note={metrics ? t('reports.totalExpensethisMonth') : t('reports.loading')} 
           />
           <ReportMetricCard 
             label={t('reports.topCategory')} 
@@ -300,12 +300,12 @@ ${transactions.filter(t => {
           <ReportMetricCard 
             label={t('reports.averageTransaction')}
             value={metrics ? formatCurrency(metrics.avgSpend, currency) : "—"} 
-            note={metrics ? "Per transaction" : t('reports.loading')} 
+            note={metrics ? t('reports.averageTransactionNote') : t('reports.loading')} 
           />
           <ReportMetricCard 
             label={t('reports.budgetHealth')} 
             value={metrics ? (metrics.savingsRate === null ? '—' : (metrics.savingsRate > 0 ? `${metrics.savingsRate}%` : `−${Math.abs(metrics.savingsRate)}%`)) : "—"} 
-            note={metrics ? (metrics.savingsRate === null ? "Add a budget to track progress" : metrics.savingsRate > 0 ? "Remaining budget" : "Over budget") : t('reports.loading')} 
+            note={metrics ? (metrics.savingsRate === null ? t('reports.budgetRemainingNote') : metrics.savingsRate > 0 ? t('reports.budgetRemainingNote') : t('reports.budgetOverNote')) : t('reports.loading')} 
           />
         </section>
 

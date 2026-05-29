@@ -94,6 +94,7 @@ const currencyOptions = [
 const languageOptions = [
   'English',
   'Spanish',
+  'Tagalog',
  // 'French',
  // 'German',
  // 'Mandarin',

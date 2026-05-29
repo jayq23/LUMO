@@ -42,7 +42,6 @@ function Budgets() {
   const [error, setError] = useState('');
   const [deleteLoading, setDeleteLoading] = useState({});
 
-  // Sync offline transactions when online
   useSyncOfflineTransactions(user?.id);
 
   useEffect(() => {
@@ -52,7 +51,6 @@ function Budgets() {
     }
   }, [user, isInitialized]);
 
-  // Refresh when coming back online
   useEffect(() => {
     const handleOnline = () => {
       if (user) loadTransactions();
@@ -61,7 +59,6 @@ function Budgets() {
     return () => window.removeEventListener('online', handleOnline);
   }, [user]);
 
-  // Auto-refresh transactions every 2 seconds to sync with added transactions
   useEffect(() => {
     const interval = setInterval(() => {
       if (user && isInitialized) {
@@ -91,10 +88,8 @@ function Budgets() {
       const serverData = await api.transactions.getAll(user.id);
       const serverTransactions = Array.isArray(serverData) ? serverData : [];
       
-      // Get offline transactions
       const offlineTxns = await getPendingTransactions();
       
-      // Combine: offline first, then server
       const allTransactions = [
         ...offlineTxns.map(t => ({
           ...t,
@@ -164,10 +159,15 @@ function Budgets() {
     const daysPassed = now.getDate();
     const projectedDaysRemaining = daysInMonth - daysPassed;
 
+    //  only count expense transactions, not income
     const monthTransactions = transactions.filter(t => {
       const tDate = new Date(t.transaction_date);
-      return tDate.getMonth() + 1 === currentMonth && tDate.getFullYear() === currentYear;
+      return tDate.getMonth() + 1 === currentMonth &&
+             tDate.getFullYear() === currentYear &&
+             t.type === 'expense';
     });
+
+    if (monthTransactions.length === 0) return null;
 
     const currentSpending = monthTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
     const avgDailySpend = currentSpending / daysPassed;
@@ -196,7 +196,6 @@ function Budgets() {
 
   const totalBudgeted = budgets.reduce((sum, b) => sum + parseFloat(b.limit_amount), 0);
   
-  // Calculate actual spending from transactions by category
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
@@ -210,7 +209,6 @@ function Budgets() {
 
   const spentByCategory = {};
   monthTransactions.forEach(t => {
-    // Use mapped category name or fallback to lowercase transaction category
     const mappedCategory = Category[t.category] || t.category.toLowerCase();
     spentByCategory[mappedCategory] = (spentByCategory[mappedCategory] || 0) + parseFloat(t.amount);
   });
@@ -297,8 +295,7 @@ function Budgets() {
                   value={newBudget.limitAmount}
                   onChange={(e) => setNewBudget({ ...newBudget, limitAmount: e.target.value })}
                   placeholder={t('budgets.limitPlaceholder')}
-                  min ="0"
-                  step="1"
+                  min="0"
                   style={{
                     width: '100%',
                     padding: '0.5rem',
@@ -344,7 +341,7 @@ function Budgets() {
           <BudgetSummaryCard 
             label={t('budgets.totalBudgeted')} 
             value={formatCurrency(totalBudgeted, currency)} 
-            note={t('budgets.allActiveBudgets')}
+            note={t('budgets.allactiveBudgets')}
           />
           <BudgetSummaryCard 
             label={t('budgets.spent')} 
@@ -399,7 +396,7 @@ function Budgets() {
                             width: `${Math.min(percentage, 100)}%`
                           }} />
                         </div>
-                        <small style={{ color: 'var(--text-3)' }}>{percentage}% spent</small>
+                        <small style={{ color: 'var(--text-3)' }}>{percentage}% {t('budgets.spent')}</small>
                       </div>
                       <button
                         onClick={() => handleDeleteBudget(b.id)}
