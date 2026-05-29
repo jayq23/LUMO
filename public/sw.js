@@ -90,9 +90,13 @@ self.addEventListener('fetch', event => {
               if (cachedResponse) {
                 return cachedResponse;
               }
-              // Return offline page
+              // For HTML pages, return index.html (app shell)
+              if (event.request.headers.get('accept')?.includes('text/html')) {
+                return caches.match('/index.html');
+              }
+              // For other assets, return offline message
               return new Response(
-                '<h1>You are offline</h1><p>This page was not cached.</p>',
+                '<h1>Offline</h1><p>This resource is not available offline.</p>',
                 { headers: { 'Content-Type': 'text/html' }, status: 503 }
               );
             });
