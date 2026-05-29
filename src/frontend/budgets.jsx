@@ -21,8 +21,7 @@ function BudgetSummaryCard({ label, value, note }) {
     </div>
   );
 }
-const Category = {'Groceries': 'Food', 'Dining': 'Food', 'Restaurants': 'Food', 'Transport': 'Transport', 'Taxi': 'Transport', 'Bus': 'Transport', 'Train': 'Transport', 'Shopping': 'Shopping', 'Clothing': 'Shopping', 'Electronics': 'Shopping', 'Subscriptions': 'Subscriptions', 'Health': 'Health', 'Utilities': 'Utilities'};
-
+const Category = {'Groceries': 'Foods', 'Dining': 'Foods', 'Restaurants': 'Foods', 'Transport': 'Transport', 'Taxi': 'Transport', 'Bus': 'Transport', 'Train': 'Transport', 'Shopping': 'Shopping', 'Clothing': 'Shopping', 'Electronics': 'Shopping', 'Subscriptions': 'Subscriptions', 'Health': 'Health', 'Utilities': 'Utilities'};
 function Budgets() {
   const { user, isInitialized, preferences } = useAuth();
   const currency = preferences.currency;
