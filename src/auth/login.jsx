@@ -17,6 +17,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [googleLoading, setGoogleLoading] = useState(false);
   const [facebookLoading, setFacebookLoading] = useState(false);
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,6 +29,16 @@ function Login() {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
     fetch(`${apiUrl}/health`).catch(() => {})
   }, []);
+
+  useEffect(() => {
+    if (error) {
+      setShowErrorAlert(true);
+      const timer = setTimeout(() => {
+        setShowErrorAlert(false);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   if (user) {
     return <Navigate to="/dashboard" />;
@@ -114,9 +125,24 @@ function Login() {
         {isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
       </button>
 
+      {showErrorAlert && error && (
+        <div className="error-alert">
+          <div className="error-alert-content">
+            <span className="error-icon">⚠️</span>
+            <span className="error-text">{error}</span>
+            <button 
+              className="error-close"
+              onClick={() => setShowErrorAlert(false)}
+              type="button"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="login-card">
         <form className="login-form" onSubmit={handleLogin}>
-          {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
           
           <div className="field">
             <label htmlFor="email">EMAIL</label>
