@@ -103,6 +103,7 @@ const languageOptions = [
  // 'Arabic',
  // 'Portuguese'
 ];
+const themeOptions = ['Light', 'Dark'];
 
 
   // Update local preferences when context changes
@@ -227,6 +228,12 @@ const languageOptions = [
     };
     setLocalPreferences(updated);
     savePreferences(updated);
+  };
+
+  const changeTheme = (theme) => {
+    const isDark = theme === 'Dark';
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
   };
 
   const handleLogout = () => {
@@ -669,19 +676,13 @@ const languageOptions = [
                 select={currencyOptions}
                 onSelect={changeCurrency}
               />
-            </div>
-          </div>
-
-          <div className="panel">
-            <div className="panel-header">
-              <div>
-                <h2>{t('settings.language')}</h2>
-                <small>{t('settings.selectLanguage')}</small>
-              </div>
-              <Palette size={18} color="var(--accent)" />
-            </div>
-
-            <div className="setting-column">
+              <SettingRow
+                title="Theme"
+                description="Choose between light and dark theme."
+                chip={localStorage.getItem('theme') === 'dark' ? 'Dark' : 'Light'}
+                select={themeOptions}
+                onSelect={changeTheme}
+              />
               <SettingRow
                 title={t('settings.language')}
                 description={t('settings.selectLanguage')}

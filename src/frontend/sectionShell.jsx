@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Sun, Moon, LayoutDashboard, ArrowLeftRight, PieChart, BarChart2, Settings, LogOut, Menu, Check } from "lucide-react";
+import { LayoutDashboard, ArrowLeftRight, PieChart, BarChart2, Settings, LogOut, Menu, Check } from "lucide-react";
 import lumoLogo from "../assets/lumo.png";
 import "../styles/dashboard.css";
 import { useAuth } from "../auth/AuthContext.jsx";
@@ -8,7 +8,6 @@ import { useTranslation } from "../utils/translations.js";
 import { getLanguageCode } from "../utils/languageHelper.js";
 
 function SectionShell({ title, subtitle, children }) {
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const { preferences } = useAuth();
@@ -24,21 +23,11 @@ function SectionShell({ title, subtitle, children }) {
   ];
 
   useEffect(() => {
+    // Initialize theme from localStorage on mount
     const savedTheme = localStorage.getItem("theme");
     const dark = savedTheme === "dark";
-    setIsDarkMode(dark);
     document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
   }, []);
-
-  const toggleTheme = () => {
-    setIsDarkMode((currentValue) => {
-      const nextValue = !currentValue;
-      const nextTheme = nextValue ? "dark" : "light";
-      document.documentElement.setAttribute("data-theme", nextTheme);
-      localStorage.setItem("theme", nextTheme);
-      return nextValue;
-    });
-  };
 
   const handleLogout = (e) => {
     e.preventDefault();
@@ -89,9 +78,6 @@ function SectionShell({ title, subtitle, children }) {
               <p className="page-sub">{subtitle}</p>
             </div>
           </div>
-          <button className="Theme" onClick={toggleTheme} type="button" aria-label={t('common.toggleTheme')}>
-            {isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
-          </button>
         </header>
 
         {children}

@@ -1,6 +1,6 @@
 import lumoLogo from '../assets/lumo.png';
 import {
-  Sun, Moon, LayoutDashboard, ArrowLeftRight, PieChart,
+  LayoutDashboard, ArrowLeftRight, PieChart,
   BarChart2, Settings, LogOut, TrendingDown, TrendingUp, Wallet, Menu
 } from "lucide-react";
 import { useState, useEffect } from 'react';
@@ -88,19 +88,11 @@ function Dashboard() {
   const language = preferences.language;
   const langCode = getLanguageCode(language);
   const t = useTranslation(langCode);
-  const [isDarkMode, setIsDarkMode]     = useState(false);
   const [sidebarOpen, setSidebarOpen]   = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading]           = useState(true);
   const navigate  = useNavigate();
   const location  = useLocation();
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    const dark = savedTheme === "dark";
-    setIsDarkMode(dark);
-    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
-  }, []);
 
   useEffect(() => {
     if (user && isInitialized) loadTransactions();
@@ -120,15 +112,6 @@ function Dashboard() {
 
   if (!isInitialized) return <div className="loading-screen">{t('common.loading')}</div>;
   if (!user) return <Navigate to="/login" />;
-
-  const toggleTheme = () => {
-    setIsDarkMode((cur) => {
-      const next = !cur;
-      document.documentElement.setAttribute("data-theme", next ? "dark" : "light");
-      localStorage.setItem("theme", next ? "dark" : "light");
-      return next;
-    });
-  };
 
   const handleLogout = () => {
     logout();
@@ -204,9 +187,6 @@ function Dashboard() {
               <p className="page-sub">{t('dashboard.subtitle', { name: user?.name })}</p>
             </div>
           </div>
-          <button className="Theme" onClick={toggleTheme} type="button" aria-label="Toggle theme">
-            {isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
-          </button>
         </header>
 
         {/* Stats */}

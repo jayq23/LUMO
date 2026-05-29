@@ -1,38 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/homepage.css";
 import lumoLogo from "../assets/lumo.png";
-import { Sun, Moon } from "lucide-react";
 
 function Homepage() {
   const navigate = useNavigate();
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const darkModeEnabled = savedTheme === "dark";
-    setIsDarkMode(darkModeEnabled);
     document.documentElement.setAttribute("data-theme", darkModeEnabled ? "dark" : "light");
   }, []);
 
   const handleLogin = () => navigate("/login");
   const handleRegister = () => navigate("/register");
 
-  const toggleTheme = () => {
-    setIsDarkMode((currentValue) => {
-      const nextValue = !currentValue;
-      const nextTheme = nextValue ? "dark" : "light";
-      document.documentElement.setAttribute("data-theme", nextTheme);
-      localStorage.setItem("theme", nextTheme);
-      return nextValue;
-    });
-  };
-
   return (
     <div className="homepage">
-      <button className="Theme" onClick={toggleTheme} type="button" aria-label="Toggle theme">
-        {isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
-      </button>
 
       <div className="card">
         <div className="logo-area">
