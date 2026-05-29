@@ -10,6 +10,7 @@ import api from '../api/client.js';
 import { formatCurrency } from '../utils/currencyHelper.js';
 import { formatDate, getLanguageCode } from '../utils/languageHelper.js';
 import { useTranslation } from '../utils/translations.js';
+import { useSyncOfflineTransactions } from '../utils/useSyncOfflineTransactions.js';
 import '../styles/dashboard.css';
 import EmptyState from './emptyState.jsx';
 
@@ -93,6 +94,9 @@ function Dashboard() {
   const [loading, setLoading]           = useState(true);
   const navigate  = useNavigate();
   const location  = useLocation();
+
+  // Enable offline transaction syncing
+  useSyncOfflineTransactions(user?.id);
 
   useEffect(() => {
     if (user && isInitialized) loadTransactions();

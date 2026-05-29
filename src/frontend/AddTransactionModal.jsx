@@ -1,9 +1,10 @@
 import { X, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../api/client.js';
 import { formatCurrency } from '../utils/currencyHelper.js';
 import { useTranslation } from '../utils/translations.js';
 import { getLanguageCode } from '../utils/languageHelper.js';
+import { addOfflineTransaction } from '../utils/offlineStorage.js';
 
 const CATEGORIES = ['Food', 'Transport', 'Shopping', 'Subscriptions', 'Health', 'Utilities', 'Other'];
 const categoryIncome= ['Salary', 'Freelance', 'Investments', 'Gifts', 'Other'];
@@ -14,6 +15,7 @@ function AddTransactionModal({ userId, onTransactionAdded, language, currency })
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [formData, setFormData] = useState({
     type: 'expense',
     category: 'Food',
@@ -21,6 +23,19 @@ function AddTransactionModal({ userId, onTransactionAdded, language, currency })
     description: '',
     transactionDate: new Date().toISOString().split('T')[0],
   });
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,18 +66,41 @@ function AddTransactionModal({ userId, onTransactionAdded, language, currency })
         return;
       }
 
-      const response = await api.transactions.create(
-        userId,
-        formData.category.toLowerCase(),
-        parseFloat(formData.amount),
-        formData.description,
-        formData.transactionDate,
-        formData.type
-      );
+      if (isOnline) {
+        // Online: Send to backend immediately
+        const response = await api.transactions.create(
+          userId,
+          formData.category.toLowerCase(),
+          parseFloat(formData.amount),
+          formData.description,
+          formData.transactionDate,
+          formData.type
+        );
 
-      if (response.error) {
-        setError(response.error);
+        if (response.error) {
+          setError(response.error);
+        } else {
+          setFormData({
+            type: 'expense',
+            category: 'Food',
+            amount: '',
+            description: '',
+            transactionDate: new Date().toISOString().split('T')[0],
+          });
+          setIsOpen(false);
+          onTransactionAdded();
+        }
       } else {
+        // Offline: Save to local storage
+        await addOfflineTransaction({
+          userId,
+          category: formData.category.toLowerCase(),
+          amount: parseFloat(formData.amount),
+          description: formData.description,
+          transactionDate: formData.transactionDate,
+          type: formData.type,
+        });
+
         setFormData({
           type: 'expense',
           category: 'Food',
@@ -71,10 +109,36 @@ function AddTransactionModal({ userId, onTransactionAdded, language, currency })
           transactionDate: new Date().toISOString().split('T')[0],
         });
         setIsOpen(false);
+        // Show success even though offline
         onTransactionAdded();
       }
     } catch (err) {
-      setError(err.message || 'Failed to add transaction');
+      if (!isOnline) {
+        // If offline and fetch fails, save to local storage as fallback
+        try {
+          await addOfflineTransaction({
+            userId,
+            category: formData.category.toLowerCase(),
+            amount: parseFloat(formData.amount),
+            description: formData.description,
+            transactionDate: formData.transactionDate,
+            type: formData.type,
+          });
+          setFormData({
+            type: 'expense',
+            category: 'Food',
+            amount: '',
+            description: '',
+            transactionDate: new Date().toISOString().split('T')[0],
+          });
+          setIsOpen(false);
+          onTransactionAdded();
+        } catch (storageErr) {
+          setError('Failed to save transaction: ' + storageErr.message);
+        }
+      } else {
+        setError(err.message || 'Failed to add transaction');
+      }
     } finally {
       setLoading(false);
     }
@@ -107,6 +171,23 @@ function AddTransactionModal({ userId, onTransactionAdded, language, currency })
 
             <form onSubmit={handleSubmit} className="modal-form">
               {error && <div className="error-message">{error}</div>}
+
+              {!isOnline && (
+                <div style={{
+                  padding: '0.75rem',
+                  background: 'rgba(240, 165, 0, 0.1)',
+                  border: '1px solid var(--accent)',
+                  borderRadius: '6px',
+                  marginBottom: '1rem',
+                  fontSize: '0.875rem',
+                  color: 'var(--accent)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <span>📱 Offline Mode - Will sync when online</span>
+                </div>
+              )}
 
               {/* Type Selection */}
               <div className="form-group">
