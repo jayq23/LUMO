@@ -32,7 +32,6 @@ function Report() {
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Sync offline transactions when online
   useSyncOfflineTransactions(user?.id);
 
   useEffect(() => {
@@ -41,7 +40,6 @@ function Report() {
     }
   }, [user, isInitialized]);
 
-  // Refresh when coming back online
   useEffect(() => {
     const handleOnline = () => {
       if (user) loadData();
@@ -60,10 +58,8 @@ function Report() {
       const serverTransactions = Array.isArray(txnData) ? txnData : [];
       if (Array.isArray(budgetData)) setBudgets(budgetData);
       
-      // Get offline transactions
       const offlineTxns = await getPendingTransactions();
       
-      // Combine: offline first, then server
       const allTransactions = [
         ...offlineTxns.map(t => ({
           ...t,
@@ -94,7 +90,6 @@ function Report() {
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
 
-    // Filter transactions for current month
     const monthTransactions = transactions.filter(t => {
       const tDate = new Date(t.transaction_date);
       return tDate.getMonth() + 1 === currentMonth && tDate.getFullYear() === currentYear;
@@ -102,17 +97,13 @@ function Report() {
 
     if (monthTransactions.length === 0) return null;
 
-    // Calculate total spent and by category
     const totalSpent = monthTransactions.reduce((sum, t) => {
-      // Default to 'expense' if type is missing (for backward compatibility)
       const type = t.type || 'expense';
       return sum + (type === 'expense' ? parseFloat(t.amount) : 0);
     }, 0);
     
-    // Calculate by category
     const categoryTotals = {};
     monthTransactions.forEach(t => {
-      // Default to 'expense' if type is missing
       const type = t.type || 'expense';
       if (type === 'expense') {
         categoryTotals[t.category] = (categoryTotals[t.category] || 0) + parseFloat(t.amount);
@@ -120,19 +111,19 @@ function Report() {
     });
     
     const topCategory = Object.entries(categoryTotals).sort(([, a], [, b]) => b - a)[0];
-    const avgSpend = monthTransactions.length > 0 ? (totalSpent / monthTransactions.length).toFixed(2) : 0;
+
+    //  divide by expense-only count, not all transactions (which included income)
+    const expenseTransactions = monthTransactions.filter(t => (t.type || 'expense') === 'expense');
+    const avgSpend = expenseTransactions.length > 0 ? (totalSpent / expenseTransactions.length).toFixed(2) : 0;
     
-    // Deep budget calculation for current month
     const currentMonthBudgets = budgets.filter(b => {
       return parseInt(b.month) === currentMonth && parseInt(b.year) === currentYear;
     });
     
     let savingsRate;
     if (currentMonthBudgets.length === 0) {
-      // No budgets set for this month
       savingsRate = null;
     } else {
-      // Calculate category-by-category budget vs spending
       let totalBudgeted = 0;
       let totalRemaining = 0;
       
@@ -145,10 +136,9 @@ function Report() {
         totalRemaining += remaining;
       });
       
-      // Calculate percentage of budget remaining
       if (totalBudgeted > 0) {
         const remainingPercent = parseFloat(((totalRemaining / totalBudgeted) * 100).toFixed(0));
-        savingsRate = Math.max(-100, remainingPercent); // Allow negative for overspend
+        savingsRate = Math.max(-100, remainingPercent);
       } else {
         savingsRate = null;
       }
@@ -174,10 +164,13 @@ function Report() {
       const monthNum = date.getMonth() + 1;
       const yearNum = date.getFullYear();
       
+      // ✅ Fixed: only count expenses in trend chart, not income
       const monthTotal = transactions
         .filter(t => {
           const tDate = new Date(t.transaction_date);
-          return tDate.getMonth() + 1 === monthNum && tDate.getFullYear() === yearNum;
+          return tDate.getMonth() + 1 === monthNum &&
+                 tDate.getFullYear() === yearNum &&
+                 (t.type || 'expense') === 'expense';
         })
         .reduce((sum, t) => sum + parseFloat(t.amount), 0);
       
@@ -192,34 +185,28 @@ function Report() {
     
     const insights = [];
     
-    // Only generate budget insights if savingsRate is a number
     if (typeof metrics.savingsRate === 'number') {
       if (metrics.savingsRate >= 20) {
-      // Logic for "Great Budget"
-      insights.push(t(`reports.insightGreatBudget`, { amount: metrics.savingsRate }));
-    } else if (metrics.savingsRate >= 0) {
-      // Logic for "Savings Rate"
-      insights.push(t(`reports.insightSavingsRate`, { amount: metrics.savingsRate }));
-    } else {
-      // Logic for "Overspend"
-      insights.push(t(`reports.insightOverspend`, { amount: Math.abs(metrics.savingsRate) }));
+        insights.push(t(`reports.insightGreatBudget`, { amount: metrics.savingsRate }));
+      } else if (metrics.savingsRate >= 0) {
+        insights.push(t(`reports.insightSavingsRate`, { amount: metrics.savingsRate }));
+      } else {
+        insights.push(t(`reports.insightOverspend`, { amount: Math.abs(metrics.savingsRate) }));
+      }
+    } else if (metrics.savingsRate === null) {
+      insights.push(t(`reports.insightCreateBudget`));
     }
-  } else if (metrics.savingsRate === null) {
-    insights.push(t(`reports.insightCreateBudget`));
-  }
-  
-  // Specific category insight
-  if (metrics.monthlySpent > 0 && metrics.topCategory && metrics.categoryTotals[metrics.topCategory] > metrics.monthlySpent * 0.4) {
-    insights.push(t(`reports.insightTopCategory`, { 
-      category: metrics.topCategory, 
-      amount: (metrics.categoryTotals[metrics.topCategory] / metrics.monthlySpent * 100).toFixed(0) 
-    }));
-  }
+    
+    if (metrics.monthlySpent > 0 && metrics.topCategory && metrics.categoryTotals[metrics.topCategory] > metrics.monthlySpent * 0.4) {
+      insights.push(t(`reports.insightTopCategory`, { 
+        category: metrics.topCategory, 
+        amount: (metrics.categoryTotals[metrics.topCategory] / metrics.monthlySpent * 100).toFixed(0) 
+      }));
+    }
 
-  // Fallback if no insights generated but stats are healthy
-  if (insights.length === 0 && metrics.monthlySpent > 0) {
-    insights.push(t('reports.insightPositive'));
-  }
+    if (insights.length === 0 && metrics.monthlySpent > 0) {
+      insights.push(t('reports.insightPositive'));
+    }
     
     return insights;
   };
