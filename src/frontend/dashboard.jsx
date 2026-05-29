@@ -103,7 +103,8 @@ function Dashboard() {
   useEffect(() => {
     if (user && isInitialized) loadTransactions();
   }, [user, isInitialized]);
-// Refresh transactions when coming back online
+
+  // Refresh transactions when coming back online
   useEffect(() => {
     const handleOnline = () => {
       if (user) loadTransactions();
@@ -118,10 +119,10 @@ function Dashboard() {
       // Get server transactions
       const data = await api.transactions.getAll(user.id);
       const serverTransactions = Array.isArray(data) ? data : [];
-      
+
       // Get offline transactions
       const offlineTxns = await getPendingTransactions();
-      
+
       // Combine: offline first, then server
       const allTransactions = [
         ...offlineTxns.map(t => ({
@@ -131,9 +132,8 @@ function Dashboard() {
         })),
         ...serverTransactions
       ];
-      
-      setTransactions(allTransactionser.id);
-      if (Array.isArray(data)) setTransactions(data);
+
+      setTransactions(allTransactions); // ✅ fixed: was `allTransactionser.id`
     } catch (err) {
       console.error('Failed to load transactions:', err);
     } finally {
