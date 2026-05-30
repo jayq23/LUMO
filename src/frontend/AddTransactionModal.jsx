@@ -60,7 +60,7 @@ function AddTransactionModal({ userId, onTransactionAdded, language, currency })
     try {
       const validCategories = CATEGORIES.join(', ');
       const result = await groq.askAboutExpenses(
-        `Given this transaction description: "${desc}", which single category best fits it? Reply with ONLY one word from this exact list: ${validCategories}. No explanation, no punctuation, just the category word.`,
+        `You are a transaction categorizer. Given this description: "${desc}", reply with ONLY one lowercase word from this list: ${validCategories}. Rules: Netflix/Spotify/streaming = subscriptions, McDonald's/food/restaurant = food, Grab/bus/fuel = transport, doctor/pharmacy/gym = health, electric/water/internet = utilities, clothes/mall = shopping. Just the word, nothing else.`,
         [], {}, currency, language
       );
 
