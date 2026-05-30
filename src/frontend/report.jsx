@@ -169,7 +169,7 @@ function Report() {
       const monthNum = date.getMonth() + 1;
       const yearNum = date.getFullYear();
       
-      // ✅ Fixed: only count expenses in trend chart, not income
+      // only count expenses in trend chart, not income
       const monthTotal = transactions
         .filter(t => {
           const tDate = new Date(t.transaction_date);

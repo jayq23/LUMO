@@ -21,7 +21,7 @@ function BudgetSummaryCard({ label, value, note }) {
     </div>
   );
 }
-const Category = {'Groceries': 'foods', 'Dining': 'foods', 'Restaurants': 'foods', 'Transport': 'Transport', 'Taxi': 'Transport', 'Bus': 'Transport', 'Train': 'Transport', 'Shopping': 'Shopping', 'Clothing': 'Shopping', 'Electronics': 'Shopping', 'Subscriptions': 'Subscriptions', 'Health': 'Health', 'Utilities': 'Utilities'};
+
 function Budgets() {
   const { user, isInitialized, preferences } = useAuth();
   const currency = preferences.currency;
@@ -32,7 +32,6 @@ function Budgets() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [autoRollFunds, setAutoRollFunds] = useState(true);
   const [alertThreshold, setAlertThreshold] = useState(80);
   const [newBudget, setNewBudget] = useState({
     category: '',
@@ -44,19 +43,16 @@ function Budgets() {
   useSyncOfflineTransactions(user?.id);
 
   useEffect(() => {
-  const refreshData = async (isInitial = false) => {
-    if (user && isInitialized) {
-      // Pass the flag to loadBudgets
-      await Promise.all([loadBudgets(isInitial), loadTransactions()]);
-    }
-  };
+    const refreshData = async (isInitial = false) => {
+      if (user && isInitialized) {
+        await Promise.all([loadBudgets(isInitial), loadTransactions()]);
+      }
+    };
 
-  refreshData(true); // First run shows loading state
-
-  const interval = setInterval(() => refreshData(false), 5000); // Background runs are silent
-  
-  return () => clearInterval(interval);
-}, [user, isInitialized]);
+    refreshData(true);
+    const interval = setInterval(() => refreshData(false), 5000);
+    return () => clearInterval(interval);
+  }, [user, isInitialized]);
 
   useEffect(() => {
     const handleOnline = () => {
@@ -67,36 +63,27 @@ function Budgets() {
   }, [user]);
 
   const loadBudgets = async (isInitialLoad = false) => {
-  if (isInitialLoad) setLoading(true); // Only show "Loading..." on the first run
-  try {
-    const data = await api.budgets.getAll(user.id);
-    if (Array.isArray(data)) {
-      setBudgets(data);
+    if (isInitialLoad) setLoading(true);
+    try {
+      const data = await api.budgets.getAll(user.id);
+      if (Array.isArray(data)) setBudgets(data);
+    } catch (err) {
+      console.error('Failed to load budgets:', err);
+      setError('Failed to load budgets');
+    } finally {
+      if (isInitialLoad) setLoading(false);
     }
-  } catch (err) {
-    console.error('Failed to load budgets:', err);
-    setError('Failed to load budgets');
-  } finally {
-    if (isInitialLoad) setLoading(false);
-  }
-};
+  };
 
   const loadTransactions = async () => {
     try {
       const serverData = await api.transactions.getAll(user.id);
       const serverTransactions = Array.isArray(serverData) ? serverData : [];
-      
       const offlineTxns = await getPendingTransactions();
-      
       const allTransactions = [
-        ...offlineTxns.map(t => ({
-          ...t,
-          synced: false,
-          _isOffline: true
-        })),
+        ...offlineTxns.map(t => ({ ...t, synced: false, _isOffline: true })),
         ...serverTransactions
       ];
-      
       setTransactions(allTransactions);
     } catch (err) {
       console.error('Failed to load transactions:', err);
@@ -106,12 +93,10 @@ function Budgets() {
   const handleCreateBudget = async (e) => {
     e.preventDefault();
     setError('');
-    
     if (!newBudget.category.trim() || !newBudget.limitAmount) {
       setError('Please fill in all fields');
       return;
     }
-
     try {
       const now = new Date();
       await api.budgets.create(
@@ -121,7 +106,6 @@ function Budgets() {
         now.getMonth() + 1,
         now.getFullYear()
       );
-      
       setNewBudget({ category: '', limitAmount: '' });
       setShowCreateModal(false);
       await loadBudgets();
@@ -134,7 +118,6 @@ function Budgets() {
 
   const handleDeleteBudget = async (budgetId) => {
     if (!window.confirm('Delete this budget?')) return;
-    
     setDeleteLoading({ ...deleteLoading, [budgetId]: true });
     try {
       await api.budgets.delete(budgetId);
@@ -157,7 +140,6 @@ function Budgets() {
     const daysPassed = now.getDate();
     const projectedDaysRemaining = daysInMonth - daysPassed;
 
-    //  only count expense transactions, not income
     const monthTransactions = transactions.filter(t => {
       const tDate = new Date(t.transaction_date);
       return tDate.getMonth() + 1 === currentMonth &&
@@ -170,7 +152,6 @@ function Budgets() {
     const currentSpending = monthTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
     const avgDailySpend = currentSpending / daysPassed;
     const projectedFinalSpending = currentSpending + (avgDailySpend * projectedDaysRemaining);
-
     const totalBudgeted = budgets.reduce((sum, b) => sum + parseFloat(b.limit_amount), 0);
     const projectedOverspend = projectedFinalSpending - totalBudgeted;
 
@@ -184,85 +165,93 @@ function Budgets() {
 
   const outlook = calculateSpendingOutlook();
 
-  if (!isInitialized) {
-    return <div>{t('common.loading')}</div>;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" />;
-  }
+  if (!isInitialized) return <div>{t('common.loading')}</div>;
+  if (!user) return <Navigate to="/login" />;
 
   const totalBudgeted = budgets.reduce((sum, b) => sum + parseFloat(b.limit_amount), 0);
-  
+
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
-  
+
   const monthTransactions = transactions.filter(t => {
     const tDate = new Date(t.transaction_date);
-    return tDate.getMonth() + 1 === currentMonth && 
-           tDate.getFullYear() === currentYear && 
+    return tDate.getMonth() + 1 === currentMonth &&
+           tDate.getFullYear() === currentYear &&
            t.type === 'expense';
   });
 
- const spentByCategory = {};
+  // FIX: removed the broken plural-stripping logic
+  const spentByCategory = {};
   monthTransactions.forEach(t => {
-  const rawCat = t.category || 'uncategorized';
-  
-  let cleanKey = rawCat.toLowerCase().trim();
-  if (cleanKey.endsWith('s')) {
-    cleanKey = cleanKey.slice(0, -1);
-  }
+    const cleanKey = (t.category || 'uncategorized').toLowerCase().trim();
+    spentByCategory[cleanKey] = (spentByCategory[cleanKey] || 0) + parseFloat(t.amount);
+  });
 
-  spentByCategory[cleanKey] = (spentByCategory[cleanKey] || 0) + parseFloat(t.amount);
-});
-  //  Calculate total spent and remaining budget for the month
   const totalSpent = monthTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
   const totalRemaining = totalBudgeted - totalSpent;
+
+  // Compute per-budget percentages for alert banner
+  const budgetPercentages = budgets.map(b => {
+    const budgetKey = (b.category || '').toLowerCase().trim();
+    const categorySpent = spentByCategory[budgetKey] || 0;
+    const limit = parseFloat(b.limit_amount) || 0;
+    const percentage = limit > 0 ? Math.round((categorySpent / limit) * 100) : 0;
+    return { ...b, categorySpent, percentage };
+  });
+
+  // Categories that have hit or exceeded the alert threshold
+  const alertingBudgets = budgetPercentages.filter(b => b.percentage >= alertThreshold);
 
   return (
     <SectionShell title={t('budgets.title')} subtitle={t('budgets.subtitle')}>
       {error && (
-        <div style={{ 
-          padding: '1rem', 
-          background: '#ff6b6b', 
-          color: 'white', 
-          borderRadius: '4px',
-          marginBottom: '1rem'
-        }}>
+        <div style={{ padding: '1rem', background: '#ff6b6b', color: 'white', borderRadius: '4px', marginBottom: '1rem' }}>
           {error}
+        </div>
+      )}
+
+      {/* ── Overspend Alert Banner ── */}
+      {alertingBudgets.length > 0 && (
+        <div style={{
+          marginBottom: '1rem',
+          padding: '1rem 1.25rem',
+          background: 'rgba(255, 107, 107, 0.1)',
+          border: '1px solid rgba(255, 107, 107, 0.4)',
+          borderLeft: '4px solid #ff6b6b',
+          borderRadius: '8px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.4rem'
+        }}>
+          <strong style={{ color: '#ff6b6b', fontSize: 14 }}>
+            ⚠ Budget Alert — {alertThreshold}% threshold reached
+          </strong>
+          {alertingBudgets.map(b => (
+            <span key={b.id} style={{ fontSize: 13, color: 'var(--text-1)' }}>
+              <strong>{b.category}</strong>: {b.percentage}% used
+              ({formatCurrency(b.categorySpent, currency)} of {formatCurrency(parseFloat(b.limit_amount), currency)})
+              {b.percentage >= 100 && <span style={{ color: '#ff6b6b', fontWeight: 700 }}> — OVER BUDGET</span>}
+            </span>
+          ))}
         </div>
       )}
 
       {showCreateModal && (
         <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.4)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0, 0, 0, 0.4)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
         }}>
           <div style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: '16px',
-            padding: '2rem',
-            maxWidth: '400px',
-            width: '90%',
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: '16px', padding: '2rem', maxWidth: '400px', width: '90%',
             boxShadow: '0 20px 50px rgba(0, 0, 0, 0.15)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <h3 style={{ margin: 0 }}>{t('budgets.createBudget')}</h3>
-              <button 
-                onClick={() => setShowCreateModal(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-              >
+              <button onClick={() => setShowCreateModal(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                 <X size={20} />
               </button>
             </div>
@@ -277,18 +266,9 @@ function Budgets() {
                   value={newBudget.category}
                   onChange={(e) => setNewBudget({ ...newBudget, category: e.target.value })}
                   placeholder={t('budgets.categoryPlaceholder')}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '1px solid var(--border)',
-                    borderRadius: '4px',
-                    background: 'var(--bg-2)',
-                    color: 'var(--text-1)',
-                    boxSizing: 'border-box'
-                  }}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--bg-2)', color: 'var(--text-1)', boxSizing: 'border-box' }}
                 />
               </div>
-
               <div style={{ marginBottom: '1.5rem' }}>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
                   {t('budgets.limit')}
@@ -300,38 +280,14 @@ function Budgets() {
                   onChange={(e) => setNewBudget({ ...newBudget, limitAmount: e.target.value })}
                   placeholder={t('budgets.limitPlaceholder')}
                   min="0"
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '1px solid var(--border)',
-                    borderRadius: '4px',
-                    background: 'var(--bg-2)',
-                    color: 'var(--text-1)',
-                    boxSizing: 'border-box'
-                  }}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--bg-2)', color: 'var(--text-1)', boxSizing: 'border-box' }}
                 />
               </div>
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end'}}>
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="ghost-btn"
-                  style={{ padding: '0.5rem 1rem' }}
-                >
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setShowCreateModal(false)} className="ghost-btn" style={{ padding: '0.5rem 1rem' }}>
                   {t('common.cancel')}
                 </button>
-                <button
-                  type="submit"
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: 'var(--accent)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontWeight: '500'
-                  }}
-                >
+                <button type="submit" style={{ padding: '0.5rem 1rem', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '500' }}>
                   {t('budgets.createBudget')}
                 </button>
               </div>
@@ -342,26 +298,10 @@ function Budgets() {
 
       <div className="page-stack">
         <section className="metric-grid">
-          <BudgetSummaryCard 
-            label={t('budgets.totalBudgeted')} 
-            value={formatCurrency(totalBudgeted, currency)} 
-            note={t('budgets.allactiveBudgets')}
-          />
-          <BudgetSummaryCard 
-            label={t('budgets.spent')} 
-            value={formatCurrency(totalSpent, currency)} 
-            note={t('budgets.amountUsed')}
-          />
-          <BudgetSummaryCard 
-            label={t('budgets.remaining')} 
-            value={formatCurrency(totalRemaining, currency)} 
-            note={t('budgets.amountLeft')}
-          />
-          <BudgetSummaryCard 
-            label={t('budgets.title')} 
-            value={budgets.length} 
-            note={t('budgets.activeCategories')} 
-          />
+          <BudgetSummaryCard label={t('budgets.totalBudgeted')} value={formatCurrency(totalBudgeted, currency)} note={t('budgets.allactiveBudgets')} />
+          <BudgetSummaryCard label={t('budgets.spent')} value={formatCurrency(totalSpent, currency)} note={t('budgets.amountUsed')} />
+          <BudgetSummaryCard label={t('budgets.remaining')} value={formatCurrency(totalRemaining, currency)} note={t('budgets.amountLeft')} />
+          <BudgetSummaryCard label={t('budgets.title')} value={budgets.length} note={t('budgets.activeCategories')} />
         </section>
 
         <section className="panel-grid">
@@ -375,49 +315,61 @@ function Budgets() {
             </div>
 
             {(loading && budgets.length === 0) ? (
-            <p>{t('common.loading')}</p>
-              ) : budgets.length > 0 ? (
+              <p>{t('common.loading')}</p>
+            ) : budgets.length > 0 ? (
               <div>
-                {budgets.map(b => {
-                  let budgetKey = (b.category || '').toLowerCase().trim();
-                    if (budgetKey.endsWith('s')) {
-                       budgetKey = budgetKey.slice(0, -1);
-                      }
-                    const categorySpent = spentByCategory[budgetKey] || 0;
-                    const limit = parseFloat(b.limit_amount) || 0;
-                    const percentage = limit > 0 ? ((categorySpent / limit) * 100).toFixed(0) : 0;
+                {budgetPercentages.map(b => {
+                  const isAlerting = b.percentage >= alertThreshold;
+                  const isOver = b.percentage >= 100;
+                  // Bar color uses alertThreshold instead of hardcoded 80
+                  const barColor = isOver
+                    ? '#ff6b6b'
+                    : isAlerting
+                    ? '#ffa94d'
+                    : b.percentage > alertThreshold * 0.6
+                    ? '#ffa94d'
+                    : '#51cf66';
+
                   return (
-                    <div key={b.id} style={{ padding: '1rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                    <div key={b.id} style={{
+                      padding: '1rem',
+                      borderBottom: '1px solid var(--border)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      gap: '1rem',
+                      // Highlight the whole row if alerting
+                      background: isAlerting ? 'rgba(255, 107, 107, 0.04)' : 'transparent',
+                      borderLeft: isAlerting ? '3px solid #ff6b6b' : '3px solid transparent',
+                    }}>
                       <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                          <strong>{b.category}</strong>
-                          <span>{formatCurrency(categorySpent, currency)} / {formatCurrency(parseFloat(b.limit_amount), currency)}</span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', alignItems: 'center' }}>
+                          <strong>
+                            {b.category}
+                            {isAlerting && (
+                              <span style={{ marginLeft: 6, fontSize: 11, color: '#ff6b6b' }}>
+                                {isOver ? '🔴 Over' : '⚠ Alert'}
+                              </span>
+                            )}
+                          </strong>
+                          <span>{formatCurrency(b.categorySpent, currency)} / {formatCurrency(parseFloat(b.limit_amount), currency)}</span>
                         </div>
-                        <div style={{ 
-                          background: 'var(--bg-2)', 
-                          height: '8px', 
-                          borderRadius: '4px',
-                          overflow: 'hidden'
-                        }}>
+                        <div style={{ background: 'var(--bg-2)', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
                           <div style={{
-                            background: percentage > 80 ? '#ff6b6b' : percentage > 50 ? '#ffa94d' : '#51cf66',
+                            background: barColor,
                             height: '100%',
-                            width: `${Math.min(percentage, 100)}%`
+                            width: `${Math.min(b.percentage, 100)}%`,
+                            transition: 'width 0.3s ease'
                           }} />
                         </div>
-                        <small style={{ color: 'var(--text-3)' }}>{percentage}% {t('budgets.spent')}</small>
+                        <small style={{ color: isAlerting ? '#ff6b6b' : 'var(--text-3)' }}>
+                          {b.percentage}% {t('budgets.spent')}
+                        </small>
                       </div>
                       <button
                         onClick={() => handleDeleteBudget(b.id)}
                         disabled={deleteLoading[b.id]}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: '#ff6b6b',
-                          padding: '0.5rem',
-                          opacity: deleteLoading[b.id] ? 0.5 : 1
-                        }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ff6b6b', padding: '0.5rem', opacity: deleteLoading[b.id] ? 0.5 : 1 }}
                       >
                         <Trash2 size={18} />
                       </button>
@@ -426,10 +378,7 @@ function Budgets() {
                 })}
               </div>
             ) : (
-              <EmptyState
-                title={t('budgets.noBudgets')}
-                description={t('budgets.createFirst')}
-              />
+              <EmptyState title={t('budgets.noBudgets')} description={t('budgets.createFirst')} />
             )}
           </div>
 
@@ -443,22 +392,25 @@ function Budgets() {
             </div>
 
             <div className="setting-column">
+              {/* Auto Roll - Coming Soon */}
               <div className="setting-row">
                 <div className="setting-copy">
-                  <strong>{t('budgets.autoRollUnused')}</strong>
+                  <strong style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {t('budgets.autoRollUnused')}
+                    <span style={{
+                      fontSize: 10, fontWeight: 700, background: 'var(--accent)',
+                      color: 'white', borderRadius: 20, padding: '2px 8px',
+                      letterSpacing: '0.5px', opacity: 0.8
+                    }}>COMING SOON</span>
+                  </strong>
                   <span>{t('budgets.moveExtraMoney')}</span>
                 </div>
-                <div 
-                  className={`switch ${autoRollFunds ? 'switch-on' : ''}`}
-                  onClick={() => setAutoRollFunds(!autoRollFunds)}
-                  style={{ cursor: 'pointer' }}
-                  role="switch"
-                  aria-checked={autoRollFunds}
-                >
+                <div className="switch" style={{ cursor: 'not-allowed', opacity: 0.4 }} role="switch" aria-checked={false}>
                   <span className="switch-knob" />
                 </div>
               </div>
 
+              {/* Overspend Alert - Now actually works */}
               <div className="setting-row">
                 <div className="setting-copy">
                   <strong>{t('budgets.overspendAlert')}</strong>
@@ -488,11 +440,7 @@ function Budgets() {
                   <strong>{t('budgets.createBudget')}</strong>
                   <span>{t('budgets.startFreshBudget')}</span>
                 </div>
-                <button 
-                  className="ghost-btn" 
-                  type="button" 
-                  onClick={() => setShowCreateModal(true)}
-                >
+                <button className="ghost-btn" type="button" onClick={() => setShowCreateModal(true)}>
                   {t('budgets.addBudget')}
                 </button>
               </div>
@@ -532,10 +480,7 @@ function Budgets() {
               </div>
             </div>
           ) : (
-            <EmptyState
-              title={t('budgets.outlookPending')}
-              description={t('budgets.monthEndProjection')}
-            />
+            <EmptyState title={t('budgets.outlookPending')} description={t('budgets.monthEndProjection')} />
           )}
         </section>
       </div>

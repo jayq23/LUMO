@@ -81,32 +81,14 @@ function Settings() {
   // Currency and Language options
 const currencyOptions = [
   'USD', 
-//  'MXN', 
   'EUR', 
- // 'CNY',
- // 'JPY', 
- // 'KRW', 
- // 'RUB', 
- // 'SAR', 
-//  'BRL',
   'PHP',
 ];
 const languageOptions = [
   'English',
   'Spanish',
- //'Tagalog',
- // 'French',
- // 'German',
- // 'Mandarin',
- // 'Chinese',
- // 'Japanese',
- // 'Korean',
- // 'Russian',
- // 'Arabic',
- // 'Portuguese'
 ];
 const themeOptions = ['Light', 'Dark'];
-
 
   // Update local preferences when context changes
   useEffect(() => {
@@ -138,7 +120,6 @@ const themeOptions = ['Light', 'Dark'];
       return;
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(editEmail)) {
       setError('Please enter a valid email address');
@@ -215,19 +196,13 @@ const themeOptions = ['Light', 'Dark'];
   };
 
   const changeCurrency = (currency) => {
-    const updated = {
-      ...localPreferences,
-      currency
-    };
+    const updated = { ...localPreferences, currency };
     setLocalPreferences(updated);
     savePreferences(updated);
   };
 
   const changeLanguage = (language) => {
-    const updated = {
-      ...localPreferences,
-      language
-    };
+    const updated = { ...localPreferences, language };
     setLocalPreferences(updated);
     savePreferences(updated);
   };
@@ -253,9 +228,6 @@ const themeOptions = ['Light', 'Dark'];
           const success = await deleteAccount();
           if (success) {
             setSuccess('Account deleted successfully. Redirecting to login...');
-            setTimeout(() => {
-              // The logout in deleteAccount context function will handle redirect
-            }, 2000);
           } else {
             setError(contextError || 'Failed to delete account');
           }
@@ -273,142 +245,44 @@ const themeOptions = ['Light', 'Dark'];
     <SectionShell title={t('settings.title')} subtitle={t('settings.subtitle')}>
       {showEditProfile && (
         <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.4)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0, 0, 0, 0.4)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
         }}>
           <div style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: '16px',
-            padding: '2rem',
-            maxWidth: '400px',
-            width: '90%',
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: '16px', padding: '2rem', maxWidth: '400px', width: '90%',
             boxShadow: '0 20px 50px rgba(0, 0, 0, 0.15)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <h3 style={{ margin: 0 }}>{t('settings.updateProfile')}</h3>
-              <button 
-                onClick={() => {
-                  setShowEditProfile(false);
-                  setError('');
-                  setSuccess('');
-                }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-              >
+              <button onClick={() => { setShowEditProfile(false); setError(''); setSuccess(''); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                 <X size={20} />
               </button>
             </div>
 
-            {error && (
-              <div style={{ 
-                padding: '0.75rem', 
-                background: '#ff6b6b', 
-                color: 'white', 
-                borderRadius: '4px',
-                marginBottom: '1rem',
-                fontSize: '0.875rem'
-              }}>
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div style={{ 
-                padding: '0.75rem', 
-                background: '#51cf66', 
-                color: 'white', 
-                borderRadius: '4px',
-                marginBottom: '1rem',
-                fontSize: '0.875rem'
-              }}>
-                {success}
-              </div>
-            )}
+            {error && <div style={{ padding: '0.75rem', background: '#ff6b6b', color: 'white', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.875rem' }}>{error}</div>}
+            {success && <div style={{ padding: '0.75rem', background: '#51cf66', color: 'white', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.875rem' }}>{success}</div>}
 
             <form onSubmit={(e) => { e.preventDefault(); handleEditProfile(); }}>
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                  {t('settings.name')}
-                </label>
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  disabled={loading}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '1px solid var(--border)',
-                    borderRadius: '4px',
-                    background: 'var(--bg-2)',
-                    color: 'var(--text-1)',
-                    boxSizing: 'border-box',
-                    opacity: loading ? 0.6 : 1,
-                    cursor: loading ? 'not-allowed' : 'text'
-                  }}
-                />
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>{t('settings.name')}</label>
+                <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} disabled={loading}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--bg-2)', color: 'var(--text-1)', boxSizing: 'border-box', opacity: loading ? 0.6 : 1 }} />
               </div>
-
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                  {t('settings.email')}
-                </label>
-                <input
-                  type="email"
-                  value={editEmail}
-                  onChange={(e) => setEditEmail(e.target.value)}
-                  disabled={loading}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '1px solid var(--border)',
-                    borderRadius: '4px',
-                    background: 'var(--bg-2)',
-                    color: 'var(--text-1)',
-                    boxSizing: 'border-box',
-                    opacity: loading ? 0.6 : 1,
-                    cursor: loading ? 'not-allowed' : 'text'
-                  }}
-                />
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>{t('settings.email')}</label>
+                <input type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} disabled={loading}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--bg-2)', color: 'var(--text-1)', boxSizing: 'border-box', opacity: loading ? 0.6 : 1 }} />
               </div>
-
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowEditProfile(false);
-                    setError('');
-                    setSuccess('');
-                  }}
-                  className="ghost-btn"
-                  style={{ padding: '0.5rem 1rem', opacity: loading ? 0.6 : 1 }}
-                  disabled={loading}
-                >
+                <button type="button" onClick={() => { setShowEditProfile(false); setError(''); setSuccess(''); }}
+                  className="ghost-btn" style={{ padding: '0.5rem 1rem', opacity: loading ? 0.6 : 1 }} disabled={loading}>
                   {t('common.cancel')}
                 </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: 'var(--accent)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    fontWeight: '500',
-                    opacity: loading ? 0.6 : 1
-                  }}
-                >
+                <button type="submit" disabled={loading}
+                  style={{ padding: '0.5rem 1rem', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: '500', opacity: loading ? 0.6 : 1 }}>
                   {loading ? t('common.loading') : t('common.save')}
                 </button>
               </div>
@@ -419,165 +293,49 @@ const themeOptions = ['Light', 'Dark'];
 
       {showPasswordModal && (
         <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.4)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0, 0, 0, 0.4)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
         }}>
           <div style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: '16px',
-            padding: '2rem',
-            maxWidth: '400px',
-            width: '90%',
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: '16px', padding: '2rem', maxWidth: '400px', width: '90%',
             boxShadow: '0 20px 50px rgba(0, 0, 0, 0.15)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <h3 style={{ margin: 0 }}>{t('settings.changePassword')}</h3>
-              <button 
-                onClick={() => {
-                  setShowPasswordModal(false);
-                  setError('');
-                  setSuccess('');
-                }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-              >
+              <button onClick={() => { setShowPasswordModal(false); setError(''); setSuccess(''); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                 <X size={20} />
               </button>
             </div>
 
-            {error && (
-              <div style={{ 
-                padding: '0.75rem', 
-                background: '#ff6b6b', 
-                color: 'white', 
-                borderRadius: '4px',
-                marginBottom: '1rem',
-                fontSize: '0.875rem'
-              }}>
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div style={{ 
-                padding: '0.75rem', 
-                background: '#51cf66', 
-                color: 'white', 
-                borderRadius: '4px',
-                marginBottom: '1rem',
-                fontSize: '0.875rem'
-              }}>
-                {success}
-              </div>
-            )}
+            {error && <div style={{ padding: '0.75rem', background: '#ff6b6b', color: 'white', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.875rem' }}>{error}</div>}
+            {success && <div style={{ padding: '0.75rem', background: '#51cf66', color: 'white', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.875rem' }}>{success}</div>}
 
             <form onSubmit={(e) => { e.preventDefault(); handlePasswordChange(); }}>
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                  {t('settings.currentPassword')}
-                </label>
-                <input
-                  type="password"
-                  value={passwordForm.current}
-                  onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
-                  disabled={loading}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '1px solid var(--border)',
-                    borderRadius: '4px',
-                    background: 'var(--bg-2)',
-                    color: 'var(--text-1)',
-                    boxSizing: 'border-box',
-                    opacity: loading ? 0.6 : 1,
-                    cursor: loading ? 'not-allowed' : 'text'
-                  }}
-                />
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>{t('settings.currentPassword')}</label>
+                <input type="password" value={passwordForm.current} onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })} disabled={loading}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--bg-2)', color: 'var(--text-1)', boxSizing: 'border-box', opacity: loading ? 0.6 : 1 }} />
               </div>
-
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                  {t('settings.newPassword')}
-                </label>
-                <input
-                  type="password"
-                  value={passwordForm.newPass}
-                  onChange={(e) => setPasswordForm({ ...passwordForm, newPass: e.target.value })}
-                  disabled={loading}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '1px solid var(--border)',
-                    borderRadius: '4px',
-                    background: 'var(--bg-2)',
-                    color: 'var(--text-1)',
-                    boxSizing: 'border-box',
-                    opacity: loading ? 0.6 : 1,
-                    cursor: loading ? 'not-allowed' : 'text'
-                  }}
-                />
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>{t('settings.newPassword')}</label>
+                <input type="password" value={passwordForm.newPass} onChange={(e) => setPasswordForm({ ...passwordForm, newPass: e.target.value })} disabled={loading}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--bg-2)', color: 'var(--text-1)', boxSizing: 'border-box', opacity: loading ? 0.6 : 1 }} />
               </div>
-
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                  {t('settings.confirmPassword')}
-                </label>
-                <input
-                  type="password"
-                  value={passwordForm.confirm}
-                  onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
-                  disabled={loading}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '1px solid var(--border)',
-                    borderRadius: '4px',
-                    background: 'var(--bg-2)',
-                    color: 'var(--text-1)',
-                    boxSizing: 'border-box',
-                    opacity: loading ? 0.6 : 1,
-                    cursor: loading ? 'not-allowed' : 'text'
-                  }}
-                />
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>{t('settings.confirmPassword')}</label>
+                <input type="password" value={passwordForm.confirm} onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })} disabled={loading}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--bg-2)', color: 'var(--text-1)', boxSizing: 'border-box', opacity: loading ? 0.6 : 1 }} />
               </div>
-
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowPasswordModal(false);
-                    setError('');
-                    setSuccess('');
-                  }}
-                  className="ghost-btn"
-                  style={{ padding: '0.5rem 1rem', opacity: loading ? 0.6 : 1 }}
-                  disabled={loading}
-                >
+                <button type="button" onClick={() => { setShowPasswordModal(false); setError(''); setSuccess(''); }}
+                  className="ghost-btn" style={{ padding: '0.5rem 1rem', opacity: loading ? 0.6 : 1 }} disabled={loading}>
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: 'var(--accent)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    fontWeight: '500',
-                    opacity: loading ? 0.6 : 1
-                  }}
-                >
+                <button type="submit" disabled={loading}
+                  style={{ padding: '0.5rem 1rem', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: '500', opacity: loading ? 0.6 : 1 }}>
                   {loading ? t('settings.updating') : t('settings.updatePassword')}
                 </button>
               </div>
@@ -615,15 +373,8 @@ const themeOptions = ['Light', 'Dark'];
             </div>
 
             <div className="action-row">
-              <button 
-                className="accent-btn" 
-                type="button"
-                onClick={() => {
-                  setError('');
-                  setSuccess('');
-                  setShowEditProfile(true);
-                }}
-              >
+              <button className="accent-btn" type="button"
+                onClick={() => { setError(''); setSuccess(''); setShowEditProfile(true); }}>
                 {t('settings.updateProfile')}
               </button>
             </div>
@@ -660,15 +411,33 @@ const themeOptions = ['Light', 'Dark'];
             </div>
 
             <div className="setting-column">
+              {/* Weekly Email - Coming Soon */}
               <SettingRow
-                title="Weekly summary email"
-                description="Receive a summary of your spending every Sunday."
-                switchOn={localPreferences.weeklyEmail}
-                onToggle={() => togglePreference('weeklyEmail')}
+                title={
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    Weekly summary email
+                    <span style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      background: 'var(--accent)',
+                      color: 'white',
+                      borderRadius: 20,
+                      padding: '2px 8px',
+                      letterSpacing: '0.5px',
+                      opacity: 0.8
+                    }}>
+                      COMING SOON
+                    </span>
+                  </span>
+                }
+                description="Weekly spending summaries via email — coming soon!"
+                switchOn={false}
+                onToggle={() => {}}
               />
+              {/* Auto-categorize - Fully functional */}
               <SettingRow
                 title="Auto-categorize transactions"
-                description="Automatically assign categories based on merchant."
+                description="Automatically assign categories based on description."
                 switchOn={localPreferences.autoCategories}
                 onToggle={() => togglePreference('autoCategories')}
               />
@@ -724,11 +493,7 @@ const themeOptions = ['Light', 'Dark'];
                 <strong>{t('settings.signOut')}</strong>
                 <span>{t('settings.signOutDescription')}</span>
               </div>
-              <button 
-                className="ghost-btn" 
-                type="button"
-                onClick={handleLogout}
-              >
+              <button className="ghost-btn" type="button" onClick={handleLogout}>
                 {t('settings.logOut')}
               </button>
             </div>
@@ -738,13 +503,10 @@ const themeOptions = ['Light', 'Dark'];
                 <strong>{t('settings.deleteAccount')}</strong>
                 <span>{t('settings.deleteAccountDescription')}</span>
               </div>
-              <button 
-                className="ghost-btn" 
-                type="button"
+              <button className="ghost-btn" type="button"
                 style={{ color: '#ff6b6b', opacity: loading ? 0.6 : 1 }}
                 disabled={loading}
-                onClick={handleDeleteAccount}
-              >
+                onClick={handleDeleteAccount}>
                 {loading ? t('settings.deleting') : t('settings.delete')}
               </button>
             </div>

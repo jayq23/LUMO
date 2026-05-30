@@ -36,7 +36,7 @@ export const groq = {
       ru: 'Russian',
       ar: 'Arabic',
       pt: 'Portuguese',
-      fil: 'Filipino'
+      tl: 'Tagalog',
     };
 
     // Check if user is asking about the creator
