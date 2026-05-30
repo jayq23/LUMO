@@ -22,54 +22,36 @@ function BudgetSummaryCard({ label, value, note }) {
   );
 }
 
-// Normalize category names to handle plural/singular/alias mismatches
 const normalizeCategory = (cat) => {
   const map = {
-    // plural fixes
-    foods: 'food',
-    transports: 'transport',
-    shoppings: 'shopping',
-    healths: 'health',
-    others: 'other',
-    // subscription variations
-    subscription: 'subscriptions',
-    // food aliases
-    grocery: 'food',
-    groceries: 'food',
-    dining: 'food',
-    restaurant: 'food',
-    restaurants: 'food',
-    fastfood: 'food',
-    // transport aliases
-    taxi: 'transport',
-    bus: 'transport',
-    grab: 'transport',
-    fuel: 'transport',
-    uber: 'transport',
-    train: 'transport',
-    // subscription aliases
-    netflix: 'subscriptions',
-    spotify: 'subscriptions',
-    streaming: 'subscriptions',
-    // health aliases
-    pharmacy: 'health',
-    medicine: 'health',
-    doctor: 'health',
-    gym: 'health',
-    // utilities aliases
-    electric: 'utilities',
-    electricity: 'utilities',
-    water: 'utilities',
-    internet: 'utilities',
-    meralco: 'utilities',
-    // shopping aliases
-    clothing: 'shopping',
-    clothes: 'shopping',
-    mall: 'shopping',
+    foods: 'food', transports: 'transport', shoppings: 'shopping',
+    healths: 'health', others: 'other', subscription: 'subscriptions',
+    grocery: 'food', groceries: 'food', dining: 'food', restaurant: 'food',
+    restaurants: 'food', fastfood: 'food',
+    taxi: 'transport', bus: 'transport', grab: 'transport', fuel: 'transport',
+    uber: 'transport', train: 'transport', transportation: 'transport',
+    transpo: 'transport', commute: 'transport', ride: 'transport',
+    jeep: 'transport', jeepney: 'transport', mrt: 'transport', lrt: 'transport',
+    netflix: 'subscriptions', spotify: 'subscriptions', streaming: 'subscriptions',
+    pharmacy: 'health', medicine: 'health', doctor: 'health', gym: 'health',
+    electric: 'utilities', electricity: 'utilities', water: 'utilities',
+    internet: 'utilities', meralco: 'utilities',
+    clothing: 'shopping', clothes: 'shopping', mall: 'shopping',
   };
   const clean = (cat || 'other').toLowerCase().trim();
   return map[clean] ?? clean;
 };
+
+// Fixed category options — no free text, no typos
+const BUDGET_CATEGORIES = [
+  { value: 'food', label: 'Food' },
+  { value: 'transport', label: 'Transport' },
+  { value: 'shopping', label: 'Shopping' },
+  { value: 'subscriptions', label: 'Subscriptions' },
+  { value: 'health', label: 'Health' },
+  { value: 'utilities', label: 'Utilities' },
+  { value: 'other', label: 'Other' },
+];
 
 function Budgets() {
   const { user, isInitialized, preferences } = useAuth();
@@ -82,10 +64,7 @@ function Budgets() {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [alertThreshold, setAlertThreshold] = useState(80);
-  const [newBudget, setNewBudget] = useState({
-    category: '',
-    limitAmount: '',
-  });
+  const [newBudget, setNewBudget] = useState({ category: '', limitAmount: '' });
   const [error, setError] = useState('');
   const [deleteLoading, setDeleteLoading] = useState({});
 
@@ -103,9 +82,7 @@ function Budgets() {
   }, [user, isInitialized]);
 
   useEffect(() => {
-    const handleOnline = () => {
-      if (user) loadTransactions();
-    };
+    const handleOnline = () => { if (user) loadTransactions(); };
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
   }, [user]);
@@ -141,18 +118,16 @@ function Budgets() {
   const handleCreateBudget = async (e) => {
     e.preventDefault();
     setError('');
-    if (!newBudget.category.trim() || !newBudget.limitAmount) {
+    if (!newBudget.category || newBudget.category === '' || !newBudget.limitAmount) {
       setError('Please fill in all fields');
       return;
     }
     try {
       const now = new Date();
       await api.budgets.create(
-        user.id,
-        newBudget.category,
+        user.id, newBudget.category,
         parseFloat(newBudget.limitAmount),
-        now.getMonth() + 1,
-        now.getFullYear()
+        now.getMonth() + 1, now.getFullYear()
       );
       setNewBudget({ category: '', limitAmount: '' });
       setShowCreateModal(false);
@@ -180,29 +155,23 @@ function Budgets() {
 
   const calculateSpendingOutlook = () => {
     if (budgets.length === 0 || transactions.length === 0) return null;
-
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
     const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
     const daysPassed = now.getDate();
     const projectedDaysRemaining = daysInMonth - daysPassed;
-
     const monthTransactions = transactions.filter(t => {
       const tDate = new Date(t.transaction_date);
       return tDate.getMonth() + 1 === currentMonth &&
-             tDate.getFullYear() === currentYear &&
-             t.type === 'expense';
+             tDate.getFullYear() === currentYear && t.type === 'expense';
     });
-
     if (monthTransactions.length === 0) return null;
-
     const currentSpending = monthTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
     const avgDailySpend = currentSpending / daysPassed;
     const projectedFinalSpending = currentSpending + (avgDailySpend * projectedDaysRemaining);
     const totalBudgeted = budgets.reduce((sum, b) => sum + parseFloat(b.limit_amount), 0);
     const projectedOverspend = projectedFinalSpending - totalBudgeted;
-
     return {
       avgDailySpend: avgDailySpend.toFixed(2),
       projectedFinalSpending: projectedFinalSpending.toFixed(2),
@@ -217,7 +186,6 @@ function Budgets() {
   if (!user) return <Navigate to="/login" />;
 
   const totalBudgeted = budgets.reduce((sum, b) => sum + parseFloat(b.limit_amount), 0);
-
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
@@ -225,11 +193,9 @@ function Budgets() {
   const monthTransactions = transactions.filter(t => {
     const tDate = new Date(t.transaction_date);
     return tDate.getMonth() + 1 === currentMonth &&
-           tDate.getFullYear() === currentYear &&
-           t.type === 'expense';
+           tDate.getFullYear() === currentYear && t.type === 'expense';
   });
 
-  // Build spentByCategory using normalizeCategory on transaction side
   const spentByCategory = {};
   monthTransactions.forEach(t => {
     const cleanKey = normalizeCategory(t.category);
@@ -239,7 +205,6 @@ function Budgets() {
   const totalSpent = monthTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
   const totalRemaining = totalBudgeted - totalSpent;
 
-  // Compute per-budget percentages using normalizeCategory on budget side too
   const budgetPercentages = budgets.map(b => {
     const budgetKey = normalizeCategory(b.category);
     const categorySpent = spentByCategory[budgetKey] || 0;
@@ -248,7 +213,6 @@ function Budgets() {
     return { ...b, categorySpent, percentage };
   });
 
-  // Categories that have hit or exceeded the alert threshold
   const alertingBudgets = budgetPercentages.filter(b => b.percentage >= alertThreshold);
 
   return (
@@ -259,18 +223,12 @@ function Budgets() {
         </div>
       )}
 
-      {/* ── Overspend Alert Banner ── */}
       {alertingBudgets.length > 0 && (
         <div style={{
-          marginBottom: '1rem',
-          padding: '1rem 1.25rem',
-          background: 'rgba(255, 107, 107, 0.1)',
-          border: '1px solid rgba(255, 107, 107, 0.4)',
-          borderLeft: '4px solid #ff6b6b',
-          borderRadius: '8px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.4rem'
+          marginBottom: '1rem', padding: '1rem 1.25rem',
+          background: 'rgba(255, 107, 107, 0.1)', border: '1px solid rgba(255, 107, 107, 0.4)',
+          borderLeft: '4px solid #ff6b6b', borderRadius: '8px',
+          display: 'flex', flexDirection: 'column', gap: '0.4rem'
         }}>
           <strong style={{ color: '#ff6b6b', fontSize: 14 }}>
             ⚠ Budget Alert — {alertThreshold}% threshold reached
@@ -308,13 +266,17 @@ function Budgets() {
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
                   {t('budgets.category')}
                 </label>
-                <input
-                  type="text"
+                {/* Dropdown instead of free text — no more typos! */}
+                <select
                   value={newBudget.category}
                   onChange={(e) => setNewBudget({ ...newBudget, category: e.target.value })}
-                  placeholder={t('budgets.categoryPlaceholder')}
                   style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--bg-2)', color: 'var(--text-1)', boxSizing: 'border-box' }}
-                />
+                >
+                  <option value="">-- Select a category --</option>
+                  {BUDGET_CATEGORIES.map(c => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
               </div>
               <div style={{ marginBottom: '1.5rem' }}>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
@@ -368,22 +330,14 @@ function Budgets() {
                 {budgetPercentages.map(b => {
                   const isAlerting = b.percentage >= alertThreshold;
                   const isOver = b.percentage >= 100;
-                  const barColor = isOver
-                    ? '#ff6b6b'
-                    : isAlerting
-                    ? '#ffa94d'
-                    : b.percentage > alertThreshold * 0.6
-                    ? '#ffa94d'
+                  const barColor = isOver ? '#ff6b6b'
+                    : isAlerting ? '#ffa94d'
+                    : b.percentage > alertThreshold * 0.6 ? '#ffa94d'
                     : '#51cf66';
-
                   return (
                     <div key={b.id} style={{
-                      padding: '1rem',
-                      borderBottom: '1px solid var(--border)',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      gap: '1rem',
+                      padding: '1rem', borderBottom: '1px solid var(--border)',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem',
                       background: isAlerting ? 'rgba(255, 107, 107, 0.04)' : 'transparent',
                       borderLeft: isAlerting ? '3px solid #ff6b6b' : '3px solid transparent',
                     }}>
@@ -401,21 +355,16 @@ function Budgets() {
                         </div>
                         <div style={{ background: 'var(--bg-2)', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
                           <div style={{
-                            background: barColor,
-                            height: '100%',
-                            width: `${Math.min(b.percentage, 100)}%`,
-                            transition: 'width 0.3s ease'
+                            background: barColor, height: '100%',
+                            width: `${Math.min(b.percentage, 100)}%`, transition: 'width 0.3s ease'
                           }} />
                         </div>
                         <small style={{ color: isAlerting ? '#ff6b6b' : 'var(--text-3)' }}>
                           {b.percentage}% {t('budgets.spent')}
                         </small>
                       </div>
-                      <button
-                        onClick={() => handleDeleteBudget(b.id)}
-                        disabled={deleteLoading[b.id]}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ff6b6b', padding: '0.5rem', opacity: deleteLoading[b.id] ? 0.5 : 1 }}
-                      >
+                      <button onClick={() => handleDeleteBudget(b.id)} disabled={deleteLoading[b.id]}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ff6b6b', padding: '0.5rem', opacity: deleteLoading[b.id] ? 0.5 : 1 }}>
                         <Trash2 size={18} />
                       </button>
                     </div>
@@ -437,16 +386,13 @@ function Budgets() {
             </div>
 
             <div className="setting-column">
-              {/* Auto Roll - Coming Soon */}
               <div className="setting-row">
                 <div className="setting-copy">
                   <strong style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     {t('budgets.autoRollUnused')}
-                    <span style={{
-                      fontSize: 10, fontWeight: 700, background: 'var(--accent)',
-                      color: 'white', borderRadius: 20, padding: '2px 8px',
-                      letterSpacing: '0.5px', opacity: 0.8
-                    }}>COMING SOON</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, background: 'var(--accent)', color: 'white', borderRadius: 20, padding: '2px 8px', letterSpacing: '0.5px', opacity: 0.8 }}>
+                      COMING SOON
+                    </span>
                   </strong>
                   <span>{t('budgets.moveExtraMoney')}</span>
                 </div>
@@ -455,24 +401,13 @@ function Budgets() {
                 </div>
               </div>
 
-              {/* Overspend Alert - working */}
               <div className="setting-row">
                 <div className="setting-copy">
                   <strong>{t('budgets.overspendAlert')}</strong>
                   <span>{t('budgets.warnWhenCategoryHits', { threshold: alertThreshold })}</span>
                 </div>
-                <select
-                  value={alertThreshold}
-                  onChange={(e) => setAlertThreshold(parseInt(e.target.value))}
-                  style={{
-                    padding: '0.25rem 0.5rem',
-                    border: '1px solid var(--border)',
-                    borderRadius: '4px',
-                    background: 'var(--bg-2)',
-                    color: 'var(--text-1)',
-                    cursor: 'pointer'
-                  }}
-                >
+                <select value={alertThreshold} onChange={(e) => setAlertThreshold(parseInt(e.target.value))}
+                  style={{ padding: '0.25rem 0.5rem', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--bg-2)', color: 'var(--text-1)', cursor: 'pointer' }}>
                   <option value={50}>50%</option>
                   <option value={75}>75%</option>
                   <option value={80}>80%</option>
