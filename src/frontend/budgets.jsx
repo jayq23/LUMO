@@ -22,6 +22,55 @@ function BudgetSummaryCard({ label, value, note }) {
   );
 }
 
+// Normalize category names to handle plural/singular/alias mismatches
+const normalizeCategory = (cat) => {
+  const map = {
+    // plural fixes
+    foods: 'food',
+    transports: 'transport',
+    shoppings: 'shopping',
+    healths: 'health',
+    others: 'other',
+    // subscription variations
+    subscription: 'subscriptions',
+    // food aliases
+    grocery: 'food',
+    groceries: 'food',
+    dining: 'food',
+    restaurant: 'food',
+    restaurants: 'food',
+    fastfood: 'food',
+    // transport aliases
+    taxi: 'transport',
+    bus: 'transport',
+    grab: 'transport',
+    fuel: 'transport',
+    uber: 'transport',
+    train: 'transport',
+    // subscription aliases
+    netflix: 'subscriptions',
+    spotify: 'subscriptions',
+    streaming: 'subscriptions',
+    // health aliases
+    pharmacy: 'health',
+    medicine: 'health',
+    doctor: 'health',
+    gym: 'health',
+    // utilities aliases
+    electric: 'utilities',
+    electricity: 'utilities',
+    water: 'utilities',
+    internet: 'utilities',
+    meralco: 'utilities',
+    // shopping aliases
+    clothing: 'shopping',
+    clothes: 'shopping',
+    mall: 'shopping',
+  };
+  const clean = (cat || 'other').toLowerCase().trim();
+  return map[clean] ?? clean;
+};
+
 function Budgets() {
   const { user, isInitialized, preferences } = useAuth();
   const currency = preferences.currency;
@@ -48,7 +97,6 @@ function Budgets() {
         await Promise.all([loadBudgets(isInitial), loadTransactions()]);
       }
     };
-
     refreshData(true);
     const interval = setInterval(() => refreshData(false), 5000);
     return () => clearInterval(interval);
@@ -181,19 +229,19 @@ function Budgets() {
            t.type === 'expense';
   });
 
-  // FIX: removed the broken plural-stripping logic
+  // Build spentByCategory using normalizeCategory on transaction side
   const spentByCategory = {};
   monthTransactions.forEach(t => {
-    const cleanKey = (t.category || 'uncategorized').toLowerCase().trim();
+    const cleanKey = normalizeCategory(t.category);
     spentByCategory[cleanKey] = (spentByCategory[cleanKey] || 0) + parseFloat(t.amount);
   });
 
   const totalSpent = monthTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
   const totalRemaining = totalBudgeted - totalSpent;
 
-  // Compute per-budget percentages for alert banner
+  // Compute per-budget percentages using normalizeCategory on budget side too
   const budgetPercentages = budgets.map(b => {
-    const budgetKey = (b.category || '').toLowerCase().trim();
+    const budgetKey = normalizeCategory(b.category);
     const categorySpent = spentByCategory[budgetKey] || 0;
     const limit = parseFloat(b.limit_amount) || 0;
     const percentage = limit > 0 ? Math.round((categorySpent / limit) * 100) : 0;
@@ -255,7 +303,6 @@ function Budgets() {
                 <X size={20} />
               </button>
             </div>
-
             <form onSubmit={handleCreateBudget}>
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
@@ -321,7 +368,6 @@ function Budgets() {
                 {budgetPercentages.map(b => {
                   const isAlerting = b.percentage >= alertThreshold;
                   const isOver = b.percentage >= 100;
-                  // Bar color uses alertThreshold instead of hardcoded 80
                   const barColor = isOver
                     ? '#ff6b6b'
                     : isAlerting
@@ -338,7 +384,6 @@ function Budgets() {
                       justifyContent: 'space-between',
                       alignItems: 'flex-start',
                       gap: '1rem',
-                      // Highlight the whole row if alerting
                       background: isAlerting ? 'rgba(255, 107, 107, 0.04)' : 'transparent',
                       borderLeft: isAlerting ? '3px solid #ff6b6b' : '3px solid transparent',
                     }}>
@@ -410,7 +455,7 @@ function Budgets() {
                 </div>
               </div>
 
-              {/* Overspend Alert - Now actually works */}
+              {/* Overspend Alert - working */}
               <div className="setting-row">
                 <div className="setting-copy">
                   <strong>{t('budgets.overspendAlert')}</strong>
