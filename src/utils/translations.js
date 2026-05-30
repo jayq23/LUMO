@@ -85,6 +85,7 @@ export const translations = {
       category: 'Category',
       amount: 'Amount',
       description: 'Description',
+      descriptionPlaceholder: 'e.g. Grocery shopping, Salary for June, Netflix subscription',
       
     },
     budgets: {
@@ -319,6 +320,7 @@ export const translations = {
       category: 'Categoría',
       amount: 'Cantidad',
       description: 'Descripción',
+      descriptionPlaceholder: 'ej. Compras de supermercado, Salario de junio, Suscripción a Netflix',
     },
     budgets: {
       title: 'Presupuestos',
@@ -535,6 +537,7 @@ export const translations = {
       createFirstTransaction: 'Gumawa ng iyong unang transaksyon upang makapagsimula',
       noTransactions: 'Walang transaksyon pa',
       addTransaction: 'Magdagdag ng Transaksyon',
+      
     },
     budgets: {
       title: 'Mga Badyet',
