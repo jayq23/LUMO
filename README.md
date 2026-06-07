@@ -30,7 +30,9 @@ Helmet.js HTTP Headers
 SQL Injection Prevention (Parameterized Queries)
 
 
-🚀 Getting Started
+## 🚀 Getting Started
+
+```bash
 # Clone the repo
 git clone https://github.com/jayq23/LUMO
 
@@ -45,3 +47,4 @@ npm run dev
 
 # Run backend (separate terminal)
 cd backend && npm start
+```
