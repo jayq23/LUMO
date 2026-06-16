@@ -4,24 +4,24 @@ A full-stack personal finance PWA that helps you track expenses, manage budgets,
 
 🔗 Live Demo: lumo-funds.vercel.app
 
-✨ Features
+Features
 
-📊 Dashboard with spending overview
-💳 Transaction management with AI auto-categorization
-📦 Budget tracking with overspend alerts
-📈 Monthly reports and category breakdown
-🤖 AI Financial Assistant (Groq + Llama 3.3 70B)
-🌍 Multi-language support (2 languages)
-💱 Multi-currency support
-📱 PWA — installable on mobile
-🔌 Offline support with background sync
-📤 Export transactions (CSV + Monthly Summary)
+Dashboard with spending overview
+Transaction management with AI auto-categorization
+Budget tracking with overspend alerts
+Monthly reports and category breakdown
+AI Financial Assistant (Groq + Llama 3.3 70B)
+Multi-language support (2 languages)
+Multi-currency support
+PWA — installable on mobile
+Offline support with background sync
+Export transactions (CSV + Monthly Summary)
 
 
 🛠️ Tech Stack
 FrontendBackendDatabaseReact, ViteNode.js, Express.jsPostgreSQLTailwind CSSJWT, OAuth 2.0SQLite
 
-🔒 Security
+Security
 
 JWT Authentication
 OAuth 2.0 (Facebook Login)
@@ -30,7 +30,7 @@ Helmet.js HTTP Headers
 SQL Injection Prevention (Parameterized Queries)
 
 
-## 🚀 Getting Started
+## Getting Started
 
 ```bash
 # Clone the repo
