@@ -11,7 +11,7 @@ A full-stack personal finance PWA that helps you track expenses, manage budgets,
 📦 Budget tracking with overspend alerts
 📈 Monthly reports and category breakdown
 🤖 AI Financial Assistant (Groq + Llama 3.3 70B)
-🌍 Multi-language support (11 languages)
+🌍 Multi-language support (2 languages)
 💱 Multi-currency support
 📱 PWA — installable on mobile
 🔌 Offline support with background sync
