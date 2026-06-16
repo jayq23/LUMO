@@ -17,7 +17,8 @@ export const translations = {
       close: 'Close',
       menu: 'Menu',
       toggleTheme: 'Toggle theme',
-      export: 'Export', 
+      export: 'Export',
+      offlineMode: 'Offline Mode',
     },
     nav: {
       dashboard: 'Dashboard',
@@ -86,6 +87,7 @@ export const translations = {
       amount: 'Amount',
       description: 'Description',
       descriptionPlaceholder: 'e.g. Grocery shopping, Salary for June, Netflix subscription',
+      date: 'Date',
       
     },
     budgets: {
@@ -253,6 +255,7 @@ export const translations = {
       menu: 'Menú',
       toggleTheme: 'Cambiar tema',
       export: 'Exportar',
+      offlineMode: 'Modo sin conexión',
     },
     nav: {
       dashboard: 'Panel Principal',
@@ -321,6 +324,7 @@ export const translations = {
       amount: 'Cantidad',
       description: 'Descripción',
       descriptionPlaceholder: 'ej. Compras de supermercado, Salario de junio, Suscripción a Netflix',
+      date: 'Fecha',
     },
     budgets: {
       title: 'Presupuestos',
