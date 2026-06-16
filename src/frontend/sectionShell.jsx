@@ -58,11 +58,6 @@ function SectionShell({ title, subtitle, children }) {
             </NavLink>
           ))}
         </nav>
-
-        <button className="logout-btn" onClick={handleLogout} type="button">
-          <LogOut size={17} />
-          {t('nav.logout')}
-        </button>
       </aside>
 
       {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}

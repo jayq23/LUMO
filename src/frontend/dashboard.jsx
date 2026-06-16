@@ -86,7 +86,7 @@ function TransactionRow({ t, currency, language }) {
 // ── Main component ──────────────────────────────────────────────
 
 function Dashboard() {
-  const { user, logout, isInitialized, preferences } = useAuth();
+  const { user, isInitialized, preferences } = useAuth();
   const currency = preferences.currency;
   const language = preferences.language;
   const langCode = getLanguageCode(language);
@@ -144,11 +144,6 @@ function Dashboard() {
   if (!isInitialized) return <div className="loading-screen">{t('common.loading')}</div>;
   if (!user) return <Navigate to="/login" />;
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
   // ── Compute stats from real data ──
   const now          = new Date();
   const currentMonth = now.getMonth();
@@ -193,11 +188,6 @@ function Dashboard() {
             </a>
           ))}
         </nav>
-
-        <button className="logout-btn" onClick={handleLogout}>
-          <LogOut size={17} />
-          {t('common.logout')}
-        </button>
       </aside>
 
       {sidebarOpen && (
