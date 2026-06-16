@@ -2,7 +2,7 @@
 
 A full-stack personal finance PWA that helps you track expenses, manage budgets, and get AI-powered financial insights.
 
-🔗 Live Demo: lumo-funds.vercel.app
+Live Demo: lumo-funds.vercel.app
 
 Features
 
@@ -18,10 +18,12 @@ Offline support with background sync
 Export transactions (CSV + Monthly Summary)
 
 
-🛠️ Tech Stack
-FrontendBackendDatabaseReact, ViteNode.js, Express.jsPostgreSQLTailwind CSSJWT, OAuth 2.0SQLite
+Tech Stack:
+Frontend: React, Vite, Tailwind CSS, CSS
+Backend: Node.js, Express.js
+Database: PostgreSQL
 
-Security
+Security:
 
 JWT Authentication
 OAuth 2.0 (Facebook Login)
