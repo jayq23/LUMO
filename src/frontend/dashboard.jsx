@@ -4,7 +4,7 @@ import {
   BarChart2, Settings, TrendingDown, TrendingUp, Wallet, Menu
 } from "lucide-react";
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { useNavigate, useLocation, Navigate, NavLink } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.jsx';
 import api from '../api/client.js';
 import { formatCurrency } from '../utils/currencyHelper.js';
@@ -177,15 +177,15 @@ function Dashboard() {
 
         <nav className="nav-menu">
           {NAV_ITEMS.map(({ keyLabel, href, icon: Icon }) => (
-            <a
+            <NavLink
               key={href}
-              href={href}
+              to={href}
               className={`nav-item ${location.pathname === href ? 'active' : ''}`}
               onClick={() => setSidebarOpen(false)}
             >
               <Icon size={18} />
               {t(keyLabel)}
-            </a>
+            </NavLink>
           ))}
         </nav>
       </aside>
