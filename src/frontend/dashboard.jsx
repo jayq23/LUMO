@@ -1,7 +1,7 @@
 import lumoLogo from '../assets/lumo.png';
 import {
   LayoutDashboard, ArrowLeftRight, PieChart,
-  BarChart2, Settings, LogOut, TrendingDown, TrendingUp, Wallet, Menu
+  BarChart2, Settings, TrendingDown, TrendingUp, Wallet, Menu
 } from "lucide-react";
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';

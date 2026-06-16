@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, ArrowLeftRight, PieChart, BarChart2, Settings, LogOut, Menu, Check } from "lucide-react";
+import { LayoutDashboard, ArrowLeftRight, PieChart, BarChart2, Settings, Menu, Check } from "lucide-react";
 import lumoLogo from "../assets/lumo.png";
 import "../styles/dashboard.css";
 import { useAuth } from "../auth/AuthContext.jsx";
@@ -28,11 +28,6 @@ function SectionShell({ title, subtitle, children }) {
     const dark = savedTheme === "dark";
     document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
   }, []);
-
-  const handleLogout = (e) => {
-    e.preventDefault();
-      navigate("/login");
-  };
 
   return (
     <div className="dashboard">
