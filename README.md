@@ -26,7 +26,7 @@ Database: PostgreSQL
 Security:
 
 JWT Authentication
-OAuth 2.0 (Facebook Login)
+OAuth 2.0 (Google + Facebook Login)
 Rate Limiting
 Helmet.js HTTP Headers
 SQL Injection Prevention (Parameterized Queries)
