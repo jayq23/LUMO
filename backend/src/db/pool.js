@@ -6,7 +6,7 @@ dotenv.config();
 const { Pool } = pg;
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || `postgresql://postgres:password@localhost:5432/expensetracker`,
+  connectionString: process.env.DATABASE_URL || 'error: no database URL provided',
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
