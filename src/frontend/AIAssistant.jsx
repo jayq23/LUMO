@@ -1,103 +1,102 @@
 import { useState, useEffect } from 'react';
 import { MessageCircle, Send, AlertCircle, Loader } from 'lucide-react';
 import groq from '../api/groq.js';
-import { apiClient } from '../api/client.js';
 import { useAuth } from '../auth/AuthContext.jsx';
 import '../styles/ai-assistant.css';
+
+const INITIAL_MESSAGE = {
+  id: 1,
+  type: 'bot',
+  text: 'Hello! I can help you understand your expenses. Ask me anything.',
+};
 
 export default function AIAssistant({ transactions = [] }) {
   const { user, isInitialized, preferences } = useAuth();
   const currency = preferences.currency;
   const language = preferences.language;
+
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      type: 'bot',
-      text: 'Hello! I can help you understand your expenses. Ask me anything.',
-    },
-  ]);
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`lumo:chat:${user?.id}`);
+      return saved ? JSON.parse(saved) : [INITIAL_MESSAGE];
+    } catch {
+      return [INITIAL_MESSAGE];
+    }
+  });
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
   const [disabled, setDisabled] = useState(false);
 
-  // Check if Groq API key is available on mount
   useEffect(() => {
-    const available = groq.isAvailable();
-    setIsAvailable(available);
-    if (!available) {
-      setMessages(prev => [...prev, {
-        id: Date.now(),
-        type: 'bot',
-        text: '⚠️ Groq API key not configured. Add VITE_GROQ_API_KEY to your .env file. Get a free key from https://console.groq.com',
-        isError: true,
-      }]);
-    }
+    setIsAvailable(true);
   }, []);
+
+  // Save to localStorage per user
+  useEffect(() => {
+    try {
+      if (user?.id) {
+        localStorage.setItem(`lumo:chat:${user.id}`, JSON.stringify(messages));
+      }
+    } catch {
+      // storage full or unavailable, ignore
+    }
+  }, [messages, user?.id]);
+
+  // Load correct chat history when user changes
+  useEffect(() => {
+    if (!user?.id) return;
+    try {
+      const saved = localStorage.getItem(`lumo:chat:${user.id}`);
+      setMessages(saved ? JSON.parse(saved) : [INITIAL_MESSAGE]);
+    } catch {
+      setMessages([INITIAL_MESSAGE]);
+    }
+  }, [user?.id]);
+
+  const clearChat = () => {
+    setMessages([INITIAL_MESSAGE]);
+    localStorage.removeItem(`lumo:chat:${user?.id}`);
+  };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!input.trim() || !isAvailable) return;
+    if (!input.trim()) return;
 
-    // Add user message
-    const userMessage = {
-      id: Date.now(),
-      type: 'user',
-      text: input,
-    };
-    setMessages(prev => [...prev, userMessage]);
+    setMessages(prev => [...prev, { id: Date.now(), type: 'user', text: input }]);
     setInput('');
     setLoading(true);
 
     try {
-      // Debug: Check if token exists
-      const token = localStorage.getItem('authToken');
-      console.log('DEBUG: Token in storage?', !!token, 'Token:', token?.substring(0, 20) + '...');
-      
-      // First, get comprehensive system data from backend
-      const systemDataResponse = await apiClient('/ai/ask', {
-        method: 'POST',
-        body: JSON.stringify({ question: input })
-      });
-
-      if (!systemDataResponse.success) {
-        throw new Error(systemDataResponse.error || 'Failed to fetch system data');
-      }
-
-      // Get comprehensive data with all system info
-      const { systemData } = systemDataResponse;
-
-      // Get AI response with full context and user preferences
-      const result = await groq.askAboutExpenses(input, systemData.transactions, systemData.summary, currency, language);
-
-      const botMessage = {
+      const result = await groq.askAboutExpenses(input, [], {}, currency, language);
+      setMessages(prev => [...prev, {
         id: Date.now() + 1,
         type: 'bot',
         text: result.success ? result.response : `Error: ${result.error}`,
         isError: !result.success,
-      };
-      setMessages(prev => [...prev, botMessage]);
+      }]);
+
+      if (result.success) {
+        window.dispatchEvent(new CustomEvent('lumo:refresh'));
+      }
     } catch (error) {
-      const botMessage = {
+      setMessages(prev => [...prev, {
         id: Date.now() + 1,
         type: 'bot',
         text: `Error: ${error.message}`,
         isError: true,
-      };
-      setMessages(prev => [...prev, botMessage]);
+      }]);
     }
+
     setLoading(false);
   };
 
-  // Only show assistant when user is authenticated and auth is initialized
-  if (!isInitialized || !user) {
-    return null;
-  }
+  if (!isInitialized || !user) return null;
 
   return (
     <div className="ai-assistant">
-      {/* Floating Button - Hidden if disabled */}
+      {/* Floating Button */}
       {!disabled && (
         <button
           className="ai-button"
@@ -113,12 +112,15 @@ export default function AIAssistant({ transactions = [] }) {
         <div className="ai-window">
           <div className="ai-header">
             <h3>LUMO Assistant</h3>
-            <button
-              className="ai-close"
-              onClick={() => setIsOpen(false)}
-            >
-              ✕
-            </button>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <button
+                onClick={clearChat}
+                style={{ fontSize: '11px', opacity: 0.6, background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}
+              >
+                Clear
+              </button>
+              <button className="ai-close" onClick={() => setIsOpen(false)}>✕</button>
+            </div>
           </div>
 
           <div className="ai-messages">
@@ -156,20 +158,6 @@ export default function AIAssistant({ transactions = [] }) {
               <Send size={18} />
             </button>
           </form>
-
-          {!isAvailable && (
-            <div className="ai-footer">
-              <div className="ai-warning">
-                Gemini API key not configured - add VITE_GEMINI_API_KEY to .env file
-              </div>
-              <button
-                className="ai-skip-btn"
-                onClick={() => setDisabled(true)}
-              >
-                Skip for now
-              </button>
-            </div>
-          )}
         </div>
       )}
     </div>
