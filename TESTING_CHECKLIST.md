@@ -4,7 +4,7 @@ Test all features to confirm everything is working properly:
 
 ---
 
-## 🔐 **Authentication**
+##  **Authentication**
 
 ### Email/Password Login
 - [ ] Go to https://lumo-funds.vercel.app/login
@@ -59,7 +59,7 @@ Test all features to confirm everything is working properly:
 
 ### Reports
 - [ ] Click **Reports** in sidebar
-- [ ] Page loads (no 404) ✅ **This was broken, now fixed**
+- [ ] Page loads (no 404)  **This was broken, now fixed**
 - [ ] Can see metrics (spending, top category, etc.)
 - [ ] Can export as text
 - [ ] Can export as CSV
@@ -71,16 +71,16 @@ Test all features to confirm everything is working properly:
 - [ ] Can change password
 - [ ] Can toggle preferences (email, categories, backup)
 - [ ] Can select currency and language
-- [ ] Dark mode button stays at top when scrolling ✅ **Just fixed**
+- [ ] Dark mode button stays at top when scrolling **Just fixed**
 
 ---
 
-## 🌙 **UI/UX**
+##  **UI/UX**
 
 ### Dark Mode
 - [ ] Click moon/sun icon at top right
 - [ ] Page switches to dark mode
-- [ ] Icon stays visible at top when scrolling ✅ **Fixed**
+- [ ] Icon stays visible at top when scrolling  **Fixed**
 - [ ] Refresh page - theme persists (localStorage working)
 
 ### Responsive
@@ -96,7 +96,7 @@ Test all features to confirm everything is working properly:
 
 ---
 
-## 🔌 **API Connectivity**
+##  **API Connectivity**
 
 ### Backend Health
 ```bash
@@ -113,11 +113,11 @@ Should return: `{"status":"ok","timestamp":"..."}`
 ### Database Schema
 - [ ] Transactions load (auto-migration created table)
 - [ ] Budgets load (auto-migration created table)
-- [ ] No "column doesn't exist" errors ✅ **Fixed with COALESCE**
+- [ ] No "column doesn't exist" errors  **Fixed with COALESCE**
 
 ---
 
-## 🆘 **Debugging if Issues Arise**
+##  **Debugging if Issues Arise**
 
 ### Browser Console Errors (F12 → Console tab)
 - [ ] No red errors
@@ -133,9 +133,9 @@ Should return: `{"status":"ok","timestamp":"..."}`
 2. Click your web service
 3. Click **Logs** tab
 4. Look for:
-   - ✅ `✨ Database initialization complete!` (should see on startup)
-   - ❌ Any red error messages
-   - ❌ 500 errors when calling APIs
+   -  ` Database initialization complete!` (should see on startup)
+   -  Any red error messages
+   -  500 errors when calling APIs
 
 ### Vercel Frontend Logs
 1. Go to: https://vercel.com/dashboard
@@ -145,22 +145,22 @@ Should return: `{"status":"ok","timestamp":"..."}`
 
 ---
 
-## 📋 **Summary of Fixes Done**
+##  **Summary of Fixes Done**
 
 | Fix | Status | Tested |
 |-----|--------|--------|
-| Hardcoded Render URL → env var | ✅ | - |
-| Trust proxy for rate limiter | ✅ | - |
-| Auto-migration on startup | ✅ | - |
-| SPA routing (Reports 404 fix) | ✅ | [ ] |
-| Facebook OAuth email fallback | ✅ | [ ] |
-| Budgets endpoint COALESCE | ✅ | [ ] |
-| AI endpoint schema handling | ✅ | [ ] |
-| Sticky dark mode button | ✅ | [ ] |
+| Hardcoded Render URL → env var |  | - |
+| Trust proxy for rate limiter |  | - |
+| Auto-migration on startup |  | - |
+| SPA routing (Reports 404 fix) |  | [ ] |
+| Facebook OAuth email fallback |  | [ ] |
+| Budgets endpoint COALESCE |  | [ ] |
+| AI endpoint schema handling |  | [ ] |
+| Sticky dark mode button |  | [ ] |
 
 ---
 
-## ✨ **Final Checks**
+##  **Final Checks**
 
 - [ ] Can login
 - [ ] Can navigate to Reports without 404
@@ -173,7 +173,7 @@ Should return: `{"status":"ok","timestamp":"..."}`
 
 ---
 
-**If all pass: 🎉 Your app is production ready!**
+**If all pass:  Your app is production ready!**
 
-Report any issues you find! 👍
+Report any issues you find! 
 
