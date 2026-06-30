@@ -1,10 +1,10 @@
-# 🚀 Vercel + Render Deployment Guide
+# Vercel + Render Deployment Guide
 
 Your Expense Tracker app is ready for production! Here's the complete step-by-step guide.
 
 ## Quick Setup (5 minutes)
 
-### ✅ Prerequisites
+###  Prerequisites
 - GitHub account (push your code)
 - Vercel account (deploy frontend)
 - Render account (deploy backend)
@@ -15,7 +15,7 @@ Your Expense Tracker app is ready for production! Here's the complete step-by-st
 ## Step 1: Prepare Your Code
 
 ### 1. Update Environment Files
-Already done! ✅
+Already done! 
 
 ### 2. Push to GitHub
 ```bash
@@ -104,8 +104,8 @@ curl https://your-backend-url.onrender.com/api/health
 
 ### 2. Verify OAuth Providers
 - Go to: **Authentication** → **Sign-in method**
-- Make sure **Google** has ✅ enabled
-- Make sure **Facebook** has ✅ enabled
+- Make sure **Google** has  enabled
+- Make sure **Facebook** has  enabled
 
 ---
 
@@ -131,14 +131,6 @@ curl https://your-backend-url.onrender.com/api/health
 ### 4. Add Environment Variables
 Add these variables:
 ```
-VITE_API_URL = https://your-backend-url.onrender.com/api
-VITE_GROQ_API_KEY = your_groq_key_here
-VITE_FIREBASE_API_KEY = AIzaSyC7QlHp_h_YLAgwGCSwaJTu-Vrba4MYyhU
-VITE_FIREBASE_AUTH_DOMAIN = tracker-app-cc79e.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID = tracker-app-cc79e
-VITE_FIREBASE_STORAGE_BUCKET = tracker-app-cc79e.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID = 153232780109
-VITE_FIREBASE_APP_ID = 1:153232780109:web:6c5cb2a9c37c0d0f76a504
 ```
 
 ### 5. Deploy
@@ -161,27 +153,27 @@ VITE_FIREBASE_APP_ID = 1:153232780109:web:6c5cb2a9c37c0d0f76a504
 ### 2. Test Google Login
 1. Click **"Continue with Google"**
 2. Authenticate with your Google account
-3. Should redirect to dashboard ✅
+3. Should redirect to dashboard 
 
 ### 3. Test Facebook Login
 1. Click **"Continue with Facebook"**
 2. Authenticate with your Facebook account
-3. Should redirect to dashboard ✅
+3. Should redirect to dashboard 
 
 ### 4. Test API
 1. Create a transaction
-2. Should save to Render PostgreSQL ✅
+2. Should save to Render PostgreSQL 
 3. Create a budget
-4. Should work without errors ✅
+4. Should work without errors 
 
 ### 5. Test Logout
 1. Go to Settings
 2. Click "Logout"
-3. Should redirect to login ✅
+3. Should redirect to login 
 
 ---
 
-## 🎉 Success! Your App is Live!
+##  Success! Your App is Live!
 
 Your production app is now running:
 - **Frontend:** https://your-app.vercel.app
@@ -190,7 +182,7 @@ Your production app is now running:
 
 ---
 
-## ⚠️ Important Notes
+##  Important Notes
 
 ### Free Tier Limitations
 - **Render free tier:** Apps go to sleep after 15 minutes of inactivity
@@ -207,7 +199,7 @@ Your production app is now running:
 
 ---
 
-## 🔧 Troubleshooting
+##  Troubleshooting
 
 ### "Google login failed: domain not authorized"
 - **Solution:** Add your Vercel URL to Firebase Authorized domains
@@ -235,7 +227,7 @@ Your production app is now running:
 
 ---
 
-## 📊 Monitoring
+##  Monitoring
 
 ### Render Dashboard
 - Check app status: https://dashboard.render.com
@@ -249,18 +241,18 @@ Your production app is now running:
 
 ---
 
-## 🔐 Security Checklist
+##  Security Checklist
 
-- ✅ Environment variables are not committed to Git
-- ✅ JWT secret is strong and random
-- ✅ Database URL is not public
-- ✅ API keys are stored as environment variables
-- ✅ CORS is restricted to your frontend domain
-- ✅ Rate limiting is enabled
+-  Environment variables are not committed to Git
+-  JWT secret is strong and random
+-  Database URL is not public
+-  API keys are stored as environment variables
+-  CORS is restricted to your frontend domain
+-  Rate limiting is enabled
 
 ---
 
-## 📝 Next Steps (Optional)
+## Next Steps (Optional)
 
 1. **Add custom domain**
    - Vercel: Project Settings → Domains
@@ -276,7 +268,7 @@ Your production app is now running:
 
 ---
 
-## 🆘 Need Help?
+##  Need Help?
 
 - **Render Support:** https://render.com/docs
 - **Vercel Support:** https://vercel.com/support
@@ -285,12 +277,12 @@ Your production app is now running:
 
 ---
 
-## 📱 Share Your App!
+##  Share Your App!
 
-Your app is now live and ready to share! 🎉
+Your app is now live and ready to share! 
 
 ```
 Frontend: https://your-app.vercel.app
 ```
 
-Enjoy your deployed Expense Tracker! 🚀
+Enjoy your deployed Expense Tracker! 
