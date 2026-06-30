@@ -11,20 +11,26 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Lumo" />
     <title>Lumo</title>
+    <script>
+      (function() {
+        const theme = localStorage.getItem('theme');
+        document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light');
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then(registration => {
-            console.log('ServiceWorker registration successful:', registration);
-          }).catch(err => {
-            console.log('ServiceWorker registration failed:', err);
-          });
-        });
-      }
+    if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then(registration => {
+    console.log('ServiceWorker registration successful:', registration);
+              }).catch(err => {
+    console.log('ServiceWorker registration failed:', err);
+              });
+            });
+          }
     </script>
   </body>
 </html>
