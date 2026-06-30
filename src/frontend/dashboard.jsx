@@ -69,7 +69,7 @@ function TransactionRow({ t, currency, language }) {
   const isOffline = t._isOffline;
 
   return (
-    <div className="txn-row" style={{ opacity: isOffline ? 0.7 : 1 }}>
+    <div className="transaction-row" style={{ opacity: isOffline ? 0.7 : 1 }}>
       <div className="txn-dot" style={{ background: color, border: isOffline ? '2px dashed rgba(255,255,255,0.5)' : 'none' }} />
       <div className="txn-info">
         <span className="txn-name">{t.category}</span>
@@ -141,7 +141,7 @@ function Dashboard() {
         ...serverTransactions
       ];
 
-      setTransactions(allTransactions); // ✅ fixed: was `allTransactionser.id`
+      setTransactions(allTransactions);
     } catch (err) {
       console.error('Failed to load transactions:', err);
     } finally {
@@ -253,9 +253,11 @@ function Dashboard() {
           {loading ? (
             <p className="page-sub" style={{ padding: '12px 0' }}>{t('dashboard.loadingTransactions')}</p>
           ) : recentTransactions.length > 0 ? (
-            recentTransactions.map((txn) => (
-              <TransactionRow key={txn.id} t={txn} currency={currency} language={language} />
-            ))
+            <div className="transactions-list">
+              {recentTransactions.map((txn) => (
+                <TransactionRow key={txn.id} t={txn} currency={currency} language={language} />
+              ))}
+            </div>
           ) : (
             <EmptyState
               title={t('dashboard.noTransactions')}
