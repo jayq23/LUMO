@@ -234,6 +234,51 @@ Delete a budget.
 
 ---
 
+## AI Assistant
+
+### POST /ai/ask
+Ask the finance assistant a question or request an action.
+
+The assistant is limited to finance and budgeting topics. It can also perform tool-driven actions like summarizing finances, adding a transaction, creating a budget, or listing transactions.
+
+**Request:**
+```json
+{
+  "question": "How much did I spend on food this month?",
+  "language": "English"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "response": "You spent ..."
+}
+```
+
+### POST /ai/categorize
+Categorize an expense description.
+
+**Request:**
+```json
+{
+  "description": "Weekly groceries",
+  "type": "expense"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "category": "food",
+  "confidence": 0.98
+}
+```
+
+---
+
 ## Error Responses
 
 All errors follow this format:
