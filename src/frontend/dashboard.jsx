@@ -1,7 +1,7 @@
 import lumoLogo from '../assets/lumo.png';
 import {
   LayoutDashboard, ArrowLeftRight, PieChart,
-  BarChart2, Settings, TrendingDown, TrendingUp, Wallet, Menu
+  BarChart2, Settings, TrendingDown, TrendingUp, Wallet, Menu, MessageCircle
 } from "lucide-react";
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Navigate, NavLink } from 'react-router-dom';
@@ -20,6 +20,7 @@ const NAV_ITEMS = [
   { keyLabel: 'nav.transactions', href: '/transactions', icon: ArrowLeftRight },
   { keyLabel: 'nav.budgets',      href: '/budgets',      icon: PieChart },
   { keyLabel: 'nav.reports',      href: '/reports',      icon: BarChart2 },
+  { keyLabel: 'nav.assistant',     href: '/assistant',    icon: MessageCircle },
   { keyLabel: 'nav.settings',     href: '/settings',     icon: Settings },
 ];
 
