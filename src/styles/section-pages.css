@@ -483,14 +483,31 @@
     grid-template-columns: 1fr;
   }
 
+  .page-stack,
+  .panel-grid,
+  .metric-grid {
+    width: min(100%, 760px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   .panel {
     padding: 20px;
   }
 }
 
 @media (max-width: 640px) {
+  .page-stack,
+  .panel-grid,
+  .metric-grid {
+    width: calc(100vw - 1rem);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   .panel {
     padding: 16px;
+    border-radius: 18px;
   }
 
   .panel-grid {

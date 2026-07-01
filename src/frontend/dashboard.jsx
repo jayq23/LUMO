@@ -193,7 +193,7 @@ function Dashboard() {
               onClick={() => setSidebarOpen(false)}
             >
               <Icon size={18} />
-              {t(keyLabel)}
+              <span>{t(keyLabel)}</span>
             </NavLink>
           ))}
         </nav>
@@ -209,6 +209,11 @@ function Dashboard() {
         {/* Topbar */}
         <header className="topbar">
           <div className="topbar-left">
+            <div className="mobile-brand" aria-hidden="true">
+              <div className="logo-box mobile-logo-box">
+                <img src={lumoLogo} alt="" />
+              </div>
+            </div>
             <button className="menu-btn" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
               <Menu size={20} />
             </button>

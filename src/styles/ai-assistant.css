@@ -67,6 +67,40 @@
   animation: none;
   overflow: hidden;
 }
+/* tablet responsive */
+@media (max-width: 1024px) {
+  .ai-assistant.embedded {
+    position: static;
+    width: 100%;
+    height: 100%;
+  }
+
+  .ai-assistant.embedded .ai-window {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    width: 100%;
+    max-width: none;
+    height: min(78vh, 780px);
+    transform: none;
+    max-height: none;
+    border-radius: 24px 24px 18px 18px;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.18);
+    transform: none;
+  }
+
+  .ai-assistant.embedded .ai-header {
+    padding: 0.9rem 1rem;
+  }
+
+  .ai-assistant.embedded .ai-messages {
+    padding: 0.9rem 1rem;
+  }
+
+  .ai-assistant.embedded .ai-input-form {
+    padding: 0.9rem 1rem;
+  }
+}
 
 @keyframes slideUp {
   from {
@@ -358,8 +392,24 @@
     padding: 0.75rem;
     gap: 0.4rem;
   }
-}
 
+  .ai-assistant.embedded {
+    position: static;
+    width: 100%;
+    height: 100%;
+  }
+
+  .ai-assistant.embedded .ai-window {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    width: 100%;
+    height: min(64vh, 620px);
+    border-radius: 22px 22px 16px 16px;
+    transform: none;
+  }
+}
+/* Cell phone responsive */
 @media (max-width: 480px) {
   .ai-assistant {
     bottom: 0.75rem;
@@ -408,6 +458,28 @@
   .ai-input-form {
     padding: 0.6rem;
     gap: 0.35rem;
+  }
+
+  .ai-assistant.embedded {
+    position: static;
+    width: 100%;
+  }
+
+  .ai-assistant.embedded .ai-window {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    width: 100%;
+    height: min(520px, 600px);
+    border-radius: 20px 20px 14px 14px;
+    transform: none;
+  }
+
+  .ai-assistant.embedded .ai-header,
+  .ai-assistant.embedded .ai-messages,
+  .ai-assistant.embedded .ai-input-form {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
   }
 }
 
