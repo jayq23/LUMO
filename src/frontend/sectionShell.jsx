@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, ArrowLeftRight, PieChart, BarChart2, Settings, Menu, Check } from "lucide-react";
+import { LayoutDashboard, ArrowLeftRight, PieChart, BarChart2, Settings, Menu, MessageCircle } from "lucide-react";
 import lumoLogo from "../assets/lumo.png";
 import "../styles/dashboard.css";
 import { useAuth } from "../auth/AuthContext.jsx";
@@ -19,6 +19,7 @@ function SectionShell({ title, subtitle, children }) {
     { label: t("nav.transactions"), href: "/transactions", icon: ArrowLeftRight },
     { label: t("nav.budgets"), href: "/budgets", icon: PieChart },
     { label: t("nav.reports"), href: "/reports", icon: BarChart2 },
+    { label: "AI Assistant", href: "/assistant", icon: MessageCircle },
     { label: t("nav.settings"), href: "/settings", icon: Settings },
   ];
 
