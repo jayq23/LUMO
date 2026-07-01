@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MessageCircle, Send, AlertCircle, Loader } from 'lucide-react';
 import groq from '../api/groq.js';
 import { useAuth } from '../auth/AuthContext.jsx';
@@ -10,7 +10,7 @@ const INITIAL_MESSAGE = {
   text: 'Hello! I can help you understand your expenses. Ask me anything.',
 };
 
-export default function AIAssistant({ transactions = [] }) {
+export default function AIAssistant({ embedded = false }) {
   const { user, isInitialized, preferences } = useAuth();
   const currency = preferences.currency;
   const language = preferences.language;
@@ -28,10 +28,22 @@ export default function AIAssistant({ transactions = [] }) {
   const [loading, setLoading] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
   const [disabled, setDisabled] = useState(false);
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     setIsAvailable(true);
   }, []);
+
+  // Auto-scroll to bottom whenever messages change or window opens
+  useEffect(() => {
+    if (!embedded && !isOpen) return;
+
+    const rafId = window.requestAnimationFrame(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    });
+
+    return () => window.cancelAnimationFrame(rafId);
+  }, [messages, loading, isOpen, embedded]);
 
   // Save to localStorage per user
   useEffect(() => {
@@ -95,9 +107,9 @@ export default function AIAssistant({ transactions = [] }) {
   if (!isInitialized || !user) return null;
 
   return (
-    <div className="ai-assistant">
+    <div className={`ai-assistant ${embedded ? 'embedded' : ''}`}>
       {/* Floating Button */}
-      {!disabled && (
+      {!embedded && !disabled && (
         <button
           className="ai-button"
           onClick={() => setIsOpen(!isOpen)}
@@ -108,7 +120,7 @@ export default function AIAssistant({ transactions = [] }) {
       )}
 
       {/* Chat Window */}
-      {isOpen && !disabled && (
+      {(embedded || isOpen) && !disabled && (
         <div className="ai-window">
           <div className="ai-header">
             <h3>LUMO Assistant</h3>
@@ -119,7 +131,9 @@ export default function AIAssistant({ transactions = [] }) {
               >
                 Clear
               </button>
-              <button className="ai-close" onClick={() => setIsOpen(false)}>✕</button>
+              {!embedded && (
+                <button className="ai-close" onClick={() => setIsOpen(false)}>✕</button>
+              )}
             </div>
           </div>
 
@@ -139,6 +153,7 @@ export default function AIAssistant({ transactions = [] }) {
                 <span>Thinking...</span>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
 
           <form className="ai-input-form" onSubmit={handleSendMessage}>
