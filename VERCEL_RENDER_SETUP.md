@@ -213,7 +213,7 @@ Your production app is now running:
 ### "Database connection error"
 - **Check:** Your `DATABASE_URL` is correct in Render
 - **Check:** Render PostgreSQL is "Available" in dashboard
-- **Fix:** Run migration again: `node backend/migrate.js`
+- **Fix:** Restart the backend so auto-migration runs again; for older databases, run `node backend/migrate.js` once manually
 
 ### "Render app keeps restarting"
 - **Check:** Render logs for errors
