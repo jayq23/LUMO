@@ -11,12 +11,7 @@ const getAuthHeaders = () => {
 
 export const apiClient = async (path, opts = {}) => {
   const token = localStorage.getItem('authToken');
-  console.log('DEBUG apiClient call:', { 
-    path, 
-    hasToken: !!token, 
-    tokenValue: token ? token.substring(0, 30) + '...' : 'NO TOKEN',
-  });
-  
+
   const headers = {
     'Content-Type': 'application/json',
     ...(token && { 'Authorization': `Bearer ${token}` }),
@@ -29,9 +24,6 @@ export const apiClient = async (path, opts = {}) => {
   });
   
   const data = await res.json();
-  if (!res.ok) {
-    console.error('DEBUG API error:', res.status, res.statusText, data);
-  }
   return data;
 };
 
