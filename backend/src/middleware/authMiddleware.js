@@ -1,13 +1,24 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+const assertJwtSecret = () => {
+  if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET is not configured');
+  }
+};
 
 export const generateToken = (userId) => {
+  assertJwtSecret();
   return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '24h' });
 };
 
 export const authMiddleware = (req, res, next) => {
   try {
+    if (!JWT_SECRET) {
+      return res.status(500).json({ error: 'JWT_SECRET is not configured on the server' });
+    }
+
     const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
