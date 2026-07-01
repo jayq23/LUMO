@@ -8,6 +8,14 @@
   font-family: inherit;
 }
 
+.ai-assistant.embedded {
+  position: static;
+  bottom: auto;
+  right: auto;
+  z-index: auto;
+  width: 100%;
+}
+
 .ai-button {
   width: 56px;
   height: 56px;
@@ -46,6 +54,18 @@
   flex-direction: column;
   border: 1px solid var(--border);
   animation: slideUp 0.3s ease;
+}
+
+.ai-assistant.embedded .ai-window {
+  position: static;
+  bottom: auto;
+  right: auto;
+  width: 100%;
+  max-width: none;
+  height: min(78vh, 780px);
+  border-radius: 16px;
+  animation: none;
+  overflow: hidden;
 }
 
 @keyframes slideUp {
