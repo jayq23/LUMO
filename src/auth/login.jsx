@@ -73,9 +73,7 @@ function Login() {
       const provider = new GoogleAuthProvider()
       const result = await signInWithPopup(auth, provider)
       const idToken = await result.user.getIdToken()
-      console.log('📡 Sending token to backend...')
       const response = await api.oauth.socialLogin(idToken, 'google')
-      console.log('✅ Backend response:', JSON.stringify(response))
       if (response.user && response.token) {
         socialLoginSuccess(response.user, response.token)
         navigate('/dashboard')
@@ -97,9 +95,7 @@ function Login() {
       provider.addScope('email')
       const result = await signInWithPopup(auth, provider)
       const idToken = await result.user.getIdToken()
-      console.log('📡 Sending token to backend...')
       const response = await api.oauth.socialLogin(idToken, 'facebook')
-      console.log('✅ Backend response:', JSON.stringify(response))
       if (response.user && response.token) {
         socialLoginSuccess(response.user, response.token)
         navigate('/dashboard')
