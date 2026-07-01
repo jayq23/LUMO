@@ -76,6 +76,12 @@ curl http://localhost:5000/api/health
 ## API Endpoints
 
 - `GET /api/health` - Health check endpoint
+- `POST /api/ai/ask` - Agentic finance assistant
+- `POST /api/ai/categorize` - Expense categorization helper
+
+## Startup Behavior
+
+The backend now initializes the database schema automatically on startup and applies the OAuth support migration when needed. For an older database, you can still run `node migrate.js` manually.
 
 ## Project Structure
 
