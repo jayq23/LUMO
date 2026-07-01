@@ -17,11 +17,11 @@ Your Expense Tracker is ready for deployment to Vercel + Render! Here's what's b
 -  `backend/.env.example` - Template for environment variables
 -  `backend/render.yaml` - Render deployment configuration
 -  `backend/package.json` - All dependencies installed (including firebase-admin)
--  `backend/migrate.js` - Database migration script
 -  `backend/src/server.js` - CORS configured for production
 -  `backend/.gitignore` - Prevents committing secrets
 -  `backend/src/db/init.sql` - Database schema with OAuth support
 -  `backend/src/db/migrations/001-add-oauth-support.sql` - Migration for existing databases
+-  `backend/src/db/auto-migrate.js` - Auto-runs schema setup and OAuth column migration on startup
 
 ### OAuth / Social Login
 -  `src/auth/login.jsx` - Google & Facebook login handlers
@@ -74,7 +74,7 @@ Your Expense Tracker is ready for deployment to Vercel + Render! Here's what's b
 - [ ] All dependencies installed: `cd backend && npm install`
 - [ ] `.env` file configured locally (for testing)
 - [ ] `JWT_SECRET` is strong random string
-- [ ] Database migration tested: `node backend/migrate.js`
+- [ ] Database auto-initialization verified on startup
 - [ ] Code pushed to GitHub
 
 #### 3. Firebase Console
@@ -96,9 +96,8 @@ Your Expense Tracker is ready for deployment to Vercel + Render! Here's what's b
    - Deploy and copy backend URL
 
 2. **Run Migration**
-   - Connect to Render PostgreSQL
-   - Run: `node backend/migrate.js`
-   - Verify database tables created
+   - Deploy backend and confirm startup logs show database initialization
+   - For an existing database, run `node backend/migrate.js` once if needed
 
 3. **Deploy Frontend**
    - Create Vercel project from GitHub
@@ -133,6 +132,7 @@ Your Expense Tracker is ready for deployment to Vercel + Render! Here's what's b
 - Settings and profile management
 - Dark mode support
 - Multi-language support (framework in place)
+- AI assistant with finance tool-calling
 
 ### Backend 
 - Express.js server
@@ -149,6 +149,7 @@ Your Expense Tracker is ready for deployment to Vercel + Render! Here's what's b
 - Budget management
 - OAuth support
 - Proper indexes for performance
+- Auto-migration on server startup
 
 ---
 
