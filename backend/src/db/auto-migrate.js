@@ -11,7 +11,7 @@ async function initializeDatabase() {
   const client = await pool.connect();
   
   try {
-    console.log('🔄 Initializing database schema...');
+    console.log('Initializing database schema...');
 
     // 1. Check if tables exist
     const tablesCheck = await client.query(`
@@ -20,7 +20,7 @@ async function initializeDatabase() {
     `);
 
     if (tablesCheck.rows.length === 0) {
-      console.log('📋 Creating tables from init.sql...');
+      console.log('Creating tables from init.sql...');
       
       const initSqlPath = path.join(process.cwd(), 'src', 'db', 'init.sql');
       const initSql = fs.readFileSync(initSqlPath, 'utf8');
@@ -37,13 +37,13 @@ async function initializeDatabase() {
         }
       }
       
-      console.log('✅ Tables created successfully');
+      console.log('Tables created successfully');
     } else {
-      console.log(`✅ Database tables already exist (${tablesCheck.rows.length} tables)`);
+      console.log(`Database tables already exist (${tablesCheck.rows.length} tables)`);
     }
 
     // 2. Run OAuth migration if needed
-    console.log('🔄 Checking OAuth support migration...');
+    console.log('Checking OAuth support migration...');
     
     const oauthCheck = await client.query(`
       SELECT COUNT(*) as count
@@ -52,7 +52,7 @@ async function initializeDatabase() {
     `);
 
     if (oauthCheck.rows[0].count === 0) {
-      console.log('📋 Adding OAuth support columns...');
+      console.log('Adding OAuth support columns...');
       
       try {
         await client.query(`
@@ -83,9 +83,9 @@ async function initializeDatabase() {
         // Index might already exist
       }
       
-      console.log('✅ OAuth columns added');
+      console.log('OAuth columns added');
     } else {
-      console.log('✅ OAuth columns already exist');
+      console.log('OAuth columns already exist');
     }
 
     // 3. Verify schema
@@ -97,16 +97,16 @@ async function initializeDatabase() {
       ORDER BY table_name
     `);
 
-    console.log('\n📊 Database schema ready:');
+    console.log('\n Database schema ready:');
     schemaCheck.rows.forEach(row => {
       console.log(`   ✓ ${row.table_name} (${row.column_count} columns)`);
     });
 
-    console.log('\n✨ Database initialization complete!\n');
+    console.log('\n Database initialization complete!\n');
     return true;
 
   } catch (err) {
-    console.error('❌ Database initialization failed:', err.message);
+    console.error(' Database initialization failed:', err.message);
     // Don't exit - server can still run, might be a temp DB connection issue
     return false;
   } finally {
