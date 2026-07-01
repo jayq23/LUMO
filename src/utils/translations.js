@@ -25,6 +25,7 @@ export const translations = {
       transactions: 'Transactions',
       budgets: 'Budgets',
       reports: 'Reports',
+      assistant: 'AI Assistant',
       settings: 'Settings',
       logout: 'Logout',
     },
@@ -262,6 +263,7 @@ export const translations = {
       transactions: 'Transacciones',
       budgets: 'Presupuestos',
       reports: 'Reportes',
+      assistant: 'Asistente AI',
       settings: 'Configuración',
       logout: 'Cerrar Sesión',
     },
@@ -2197,14 +2199,23 @@ const normalizeLanguage = (lang) => {
 export const getTranslation = (key, language = 'en', replacements = {}) => {
   const normalizedLang = normalizeLanguage(language);
   const keys = key.split('.');
-  let current = translations[normalizedLang] || translations['en'];
-
-  for (const k of keys) {
-    current = current?.[k];
-    if (!current) {
-      console.warn(`Missing translation for key: ${key} in language: ${normalizedLang}`);
-      return key; // Fallback to key if not found
+  const getValue = (source) => {
+    let current = source;
+    for (const k of keys) {
+      current = current?.[k];
+      if (!current) return null;
     }
+    return current;
+  };
+
+  let current = getValue(translations[normalizedLang]);
+  if (!current && normalizedLang !== 'en') {
+    current = getValue(translations['en']);
+  }
+
+  if (!current) {
+    console.warn(`Missing translation for key: ${key} in language: ${normalizedLang}`);
+    return key; // Fallback to key if not found
   }
 
   let result = current; 
