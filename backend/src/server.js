@@ -30,7 +30,7 @@ const corsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.warn(`❌ CORS blocked: ${origin}`);
+      console.warn(` CORS blocked: ${origin}`);
       callback(new Error(`CORS policy: origin ${origin} is not allowed`));
     }
   },
