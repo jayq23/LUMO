@@ -103,11 +103,10 @@ git push
 6. Wait for deployment to complete
 7. Copy your backend URL (e.g., `https://expensetracker-backend.onrender.com`)
 
-### Step 3: Run Database Migration on Render
+### Step 3: Confirm Database Initialization on Render
 1. In Render, go to your web service
-2. Click "Shell" tab
-3. Run: `cd backend && node migrate.js`
-4. Verify it completes successfully
+2. Open the logs and confirm the startup output shows database initialization
+3. If you are upgrading an existing database, run `cd backend && node migrate.js` once from the Shell tab
 
 ### Step 4: Deploy Frontend (Vercel)
 1. Go to: https://vercel.com/dashboard
@@ -149,6 +148,10 @@ git push
 ### "Database connection failed"
 - **Cause:** `DATABASE_URL` is incorrect or Render PostgreSQL is not running
 - **Fix:** Check Render dashboard for database status and connection string
+
+### "Database migration not applied"
+- **Cause:** The app is pointing at an older database that has not been upgraded yet
+- **Fix:** Restart the backend so auto-migration runs again, or run `cd backend && node migrate.js` once manually
 
 ### "Render free tier keeps sleeping"
 - **Note:** Free tier on Render will put app to sleep after 15 min of inactivity
