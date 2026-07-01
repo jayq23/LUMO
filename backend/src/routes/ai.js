@@ -179,11 +179,38 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
       return res.json({ success: true, response: 'This expense tracker was created by Jay Sorreda.' });
     }
 
+    // Finance topic guard — hard filter, doesn't rely on the model's discretion
+    const financeKeywords = [
+      'budget', 'expense', 'income', 'transaction', 'spend', 'spent', 'save', 'saving',
+      'money', 'finance', 'financial', 'salary', 'cost', 'price', 'balance', 'pay',
+      'debt', 'invest', 'investment', 'allowance', 'freelance', 'gift', 'category',
+      'summary', 'report', 'how much', 'total', 'food', 'transport', 'shopping',
+      'subscription', 'utilities', 'health'
+    ];
+    const isFinanceRelated = financeKeywords.some(k => question.toLowerCase().includes(k));
+
+    if (!isFinanceRelated) {
+      return res.json({
+        success: true,
+        response: 'I can only help with finance and budgeting questions! Ask me about your expenses, budget, or financial goals instead.'
+      });
+    }
+
     // Agentic loop
-    const messages = [
-      {
-        role: 'system',
-        content: `You are Lumo AI, a smart personal finance assistant. You can answer questions AND take actions (add transactions, create budgets, check summaries). Always respond in ${language}. Be concise and friendly. No markdown symbols or bullet points.`
+   const messages = [
+  {
+    role: 'system',
+    content: `You are Lumo AI, a finance assistant. You ONLY discuss personal finance, budgeting, expenses, income, savings, and money management.
+
+    CRITICAL RULE: If the user's question is NOT about finance, budgeting, or their transactions (examples of off-topic: love, relationships, general trivia, coding, philosophy, etc), you MUST NOT answer it at all. Instead respond with EXACTLY this sentence and nothing else: "I can only help with finance and budgeting questions! Ask me about your expenses, budget, or financial goals instead."
+
+    Do not explain the off-topic concept first before declining. Do not be polite-but-still-answer. Refuse immediately and completely.
+
+    For finance-related questions only:
+    - You can answer questions AND take actions (add transactions, create budgets, check summaries).
+    - Always respond in ${language}.
+    - Be concise and professional.
+    - No markdown symbols or bullet points.`
       },
       { role: 'user', content: question }
     ];
