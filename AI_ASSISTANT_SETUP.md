@@ -1,6 +1,6 @@
 # AI Assistant Setup (Groq)
 
-The Expense Tracker includes an AI Assistant powered by Groq for asking questions about your expenses.
+The Expense Tracker includes an AI Assistant powered by Groq for asking questions about your expenses and taking finance actions.
 
 ## Installation
 
@@ -26,17 +26,23 @@ The AI Assistant will automatically detect the API key and enable the chat featu
 - **Free tier** - Generous free limits (thousands of requests)
 - **Floating chat button** - Access AI on any page
 - **Expense analysis** - Ask about spending patterns, totals, categories
+- **Agentic actions** - The assistant can summarize finances, add transactions, create budgets, and list recent activity
+- **Finance-only guard** - Off-topic questions are rejected so the assistant stays focused on budgeting and expenses
+- **Per-user chat history** - Chat messages are saved in localStorage for each signed-in user
 - **Example questions**:
   - "What did I spend the most on?"
   - "Calculate my total expenses"
   - "How much did I spend on groceries?"
   - "What's my average transaction?"
+  - "Add a food expense for 24 dollars"
+  - "Create a budget for transport"
 
 ## Usage
 
 1. Click the **message bubble icon** (bottom-right) to open the chat
 2. Type your question about expenses
 3. Wait for AI response (usually 1-2 seconds)
+4. Use **Clear** to reset the current chat thread for that user
 
 ## Troubleshooting
 
@@ -55,10 +61,11 @@ The AI Assistant will automatically detect the API key and enable the chat featu
 
 ## Privacy & Cost
 
-- ✅ Free tier with generous limits
-- ✅ Only expense data sent to Groq, not your login/password
-- ✅ Fast responses (Groq specializes in speed)
-- 🔒 Your transaction details are processed securely
+-  Free tier with generous limits
+-  Only expense data sent to Groq, not your login/password
+-  Fast responses (Groq specializes in speed)
+-  Your transaction details are processed securely
+-  Chat history stays in the browser for the current user only
 
 ## Free Tier Limits
 
