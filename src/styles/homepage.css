@@ -226,7 +226,149 @@ body::-webkit-scrollbar {
   letter-spacing: 0.04em;
 }
 /* ── Mobile View ───────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  #root, .dashboard, .main .ai-assistant, .section {
+    overflow-x: hidden;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .topbar {
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  html, body, #root {
+    overflow-y: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  #root::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+  .homepage {
+    padding: 24px 20px;
+  }
+
+  .card {
+    padding: 36px 24px;
+    border-radius: 20px;
+    max-width: 100%;
+  }
+
+  .logo-box {
+    width: 68px;
+    height: 68px;
+    border-radius: 18px;
+  }
+
+  .logo-box img {
+    width: 46px;
+    height: 46px;
+  }
+
+  .headline {
+    font-size: 21px;
+  }
+
+  .sub {
+    font-size: 13px;
+  }
+
+  .loginBtn,
+  .registerBtn {
+    font-size: 13.5px;
+    padding: 13px 0;
+}
+}
+@media (max-width: 769px) {
+  #root, .dashboard, .main .ai-assistant, .section {
+    overflow-x: hidden;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .topbar {
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  html, body, #root {
+    overflow-y: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  #root::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+  .homepage {
+    padding: 24px 20px;
+  }
+
+  .card {
+    padding: 36px 24px;
+    border-radius: 20px;
+    max-width: 100%;
+  }
+
+  .logo-box {
+    width: 68px;
+    height: 68px;
+    border-radius: 18px;
+  }
+
+  .logo-box img {
+    width: 46px;
+    height: 46px;
+  }
+
+  .headline {
+    font-size: 21px;
+  }
+
+  .sub {
+    font-size: 13px;
+  }
+
+  .loginBtn,
+  .registerBtn {
+    font-size: 13.5px;
+    padding: 13px 0;
+}
+}
 @media (max-width: 480px) {
+
+  #root, .dashboard, .main .ai-assistant, .section {
+    overflow-x: hidden;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .topbar {
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  html, body, #root {
+    overflow-y: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  #root::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
   .homepage {
     padding: 24px 20px;
     justify-content: center;
