@@ -470,7 +470,7 @@
     left: auto;
     bottom: auto;
     width: 100%;
-    height: min(520px, 600px);
+    height: min(560px, 560px);
     border-radius: 20px 20px 14px 14px;
     transform: none;
   }
