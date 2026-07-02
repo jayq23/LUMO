@@ -500,9 +500,9 @@
   .page-stack,
   .panel-grid,
   .metric-grid {
-    width: calc(100vw - 1rem);
-    margin-left: auto;
-    margin-right: auto;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
   }
 
   .panel {
