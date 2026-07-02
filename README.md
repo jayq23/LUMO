@@ -58,3 +58,4 @@ npm run dev
 cd backend && npm start
 ```
 # Trigger
+# Update Settings
