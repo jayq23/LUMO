@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lumo-v1';
+const CACHE_NAME = 'lumo-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -64,7 +64,7 @@ self.addEventListener('fetch', event => {
             .then(cachedResponse => {
               return cachedResponse || new Response(
                 JSON.stringify({ error: 'Offline - cached data unavailable' }),
-                { status: 503, statusText: 'Service Unavailable' }
+                { status: 503, statusText: 'Service Unavailable', headers: { 'Content-Type': 'application/json' } }
               );
             });
         })
@@ -90,15 +90,15 @@ self.addEventListener('fetch', event => {
               if (cachedResponse) {
                 return cachedResponse;
               }
-              // For HTML pages, return index.html (app shell)
-              if (event.request.headers.get('accept')?.includes('text/html')) {
+              // Only fall back to the HTML shell for actual page navigations.
+              // Returning HTML for a failed JS/CSS/font/image request corrupts
+              // the render (browser tries to decode HTML as binary asset).
+              if (event.request.mode === 'navigate' ||
+                  event.request.headers.get('accept')?.includes('text/html')) {
                 return caches.match('/index.html');
               }
-              // For other assets, return offline message
-              return new Response(
-                '<h1>Offline</h1><p>This resource is not available offline.</p>',
-                { headers: { 'Content-Type': 'text/html' }, status: 503 }
-              );
+              // For binary/static assets, fail cleanly with an empty response
+              return new Response('', { status: 504, statusText: 'Offline' });
             });
         })
     );
