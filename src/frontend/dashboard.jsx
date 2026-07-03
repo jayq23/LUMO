@@ -101,17 +101,21 @@ function Dashboard() {
   // Enable offline transaction syncing
   useSyncOfflineTransactions(user?.id);
 
-  // Refresh transactions when "lumo:refresh" event is dispatched
+// Load transactions on mount and when user changes
   useEffect(() => {
-    const handleRefresh = () => {
-      if (user) loadTransactions();
-    };
-    window.addEventListener('lumo:refresh', handleRefresh);
-    return () => window.removeEventListener('lumo:refresh', handleRefresh);
-  }, [user]);
-  useEffect(() => {
-    if (user && isInitialized) loadTransactions();
-  }, [user, isInitialized]);
+  if (user && isInitialized) {
+    loadTransactions();
+  }
+  const handleRefresh = () => {
+    if (user && isInitialized) {
+      loadTransactions();
+    }
+  };
+  window.addEventListener('lumo:refresh', handleRefresh);
+  return () => {
+    window.removeEventListener('lumo:refresh', handleRefresh);
+  };
+}, [user, isInitialized]);
 
   // Refresh transactions when coming back online
   useEffect(() => {
