@@ -2,6 +2,8 @@ import express from 'express';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { aiLimiter } from '../middleware/rateLimiter.js';
 import pool from '../db/pool.js';
+import { getLanguageCode } from '../utils/languageHelper.js';
+import { getCurrencySymbol } from '../utils/currencyHelper.js';
 
 const router = express.Router();
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
@@ -160,7 +162,7 @@ async function executeTool(toolName, args, userId) {
 // ─── POST /api/ai/ask — Full agentic loop ─────────────────────────────────────
 router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
   try {
-    const { question, language = 'English' } = req.body;
+    const { question, currency: rawCurrency, language: rawLanguage } = req.body;
     const userId = req.user.id;
 
     if (!question || question.trim().length === 0) {
@@ -172,6 +174,13 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
     if (!GROQ_API_KEY) {
       return res.status(500).json({ error: 'GROQ_API_KEY not configured on server' });
     }
+
+    // currency/language live in localStorage on the frontend (no DB column
+    // for these yet), so they come from the request body — default safely
+    // if missing/malformed instead of trusting the client blindly
+    const currency = rawCurrency || 'PHP';
+    const language = getLanguageCode(rawLanguage);
+    const currencySymbol = getCurrencySymbol(currency);
 
     // Creator check
     const creatorKeywords = ['who created', 'who made', 'who built', 'creator', 'developer', 'made by', 'created by'];
@@ -197,10 +206,10 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
     }
 
     // Agentic loop
-   const messages = [
-  {
-    role: 'system',
-    content: `You are Lumo AI, a finance assistant. You ONLY discuss personal finance, budgeting, expenses, income, savings, and money management.
+    const messages = [
+      {
+        role: 'system',
+        content: `You are Lumo AI, a finance assistant. You ONLY discuss personal finance, budgeting, expenses, income, savings, and money management.
 
     CRITICAL RULE: If the user's question is NOT about finance, budgeting, or their transactions (examples of off-topic: love, relationships, general trivia, coding, philosophy, etc), you MUST NOT answer it at all. Instead respond with EXACTLY this sentence and nothing else: "I can only help with finance and budgeting questions! Ask me about your expenses, budget, or financial goals instead."
 
@@ -209,6 +218,7 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
     For finance-related questions only:
     - You can answer questions AND take actions (add transactions, create budgets, check summaries).
     - Always respond in ${language}.
+    - The user's currency is ${currency} (symbol: ${currencySymbol}). Always show monetary amounts using this symbol, never assume a different currency.
     - Be concise and professional.
     - No markdown symbols or bullet points.`
       },
@@ -254,7 +264,12 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
 
       // Execute all tool calls AI requested
       for (const toolCall of msg.tool_calls) {
-        const args = JSON.parse(toolCall.function.arguments);
+        let args;
+        try {
+          args = JSON.parse(toolCall.function.arguments);
+        } catch {
+          args = {};
+        }
         console.log(`AI calling tool: ${toolCall.function.name}`, args);
 
         const result = await executeTool(toolCall.function.name, args, userId);
