@@ -179,7 +179,7 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
     // for these yet), so they come from the request body — default safely
     // if missing/malformed instead of trusting the client blindly
     const currency = rawCurrency || 'PHP';
-    const language = getLanguageCode(rawLanguage);
+    const language = rawLanguage || 'English';
     const currencySymbol = getCurrencySymbol(currency);
 
     // Creator check
