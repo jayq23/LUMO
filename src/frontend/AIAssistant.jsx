@@ -81,7 +81,7 @@ export default function AIAssistant({ embedded = false }) {
     setLoading(true);
 
     try {
-      const result = await groq.askAboutExpenses(input, [], {}, currency, language);
+      const result = await groq.askAboutExpenses(input, currency, language);
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         type: 'bot',
