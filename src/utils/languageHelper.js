@@ -2,8 +2,6 @@
 // language helper functions
 // use with useAuth hook to get language from preferences
 
-import { toLower } from "firebase/firestore/pipelines";
-
 export const languages = {
   en: 'English',
   es: 'Spanish',
