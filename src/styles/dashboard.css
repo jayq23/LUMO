@@ -447,23 +447,26 @@ body {
   }
 
   .sidebar {
-    top: auto;
-    left: 50%;
-    right: auto;
-    bottom: 10px;
-    width: min(calc(100vw - 16px), 560px);
-    min-height: auto;
-    height: auto;
-    transform: translateX(-50%);
-    border: 1px solid var(--border);
-    border-radius: 28px;
-    padding: 10px 8px;
-    flex-direction: row;
-    align-items: center;
-    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22);
-    background: rgba(21, 23, 32, 0.96);
-    backdrop-filter: blur(18px);
-  }
+  top: auto;
+  left: 50%;
+  right: auto;
+  bottom: 10px;
+  width: min(calc(100vw - 16px), 560px);
+  min-height: auto;
+  height: auto;
+  transform: translateX(-50%) translateZ(0);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  padding: 10px 8px;
+  flex-direction: row;
+  align-items: center;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22);
+  background: rgba(21, 23, 32, 0.96);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  will-change: transform;
+  isolation: isolate;
+}
 
   .logo-area,
   .sidebar .logo-area,
