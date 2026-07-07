@@ -14,28 +14,28 @@ router.use(dataLimiter);
 router.get('/user/:userId', verifyOwnership, async (req, res, next) => {
   try {
     const { userId } = req.params;
-    
-    // Try with spent_amount column first
+    const now = new Date();
+    const month = parseInt(req.query.month) || (now.getMonth() + 1);
+    const year = parseInt(req.query.year) || now.getFullYear();
+
     try {
       const query = `
         SELECT id, category, limit_amount, COALESCE(spent_amount, 0) as spent_amount, month, year, created_at
         FROM budgets
-        WHERE user_id = $1
+        WHERE user_id = $1 AND month = $2 AND year = $3
         ORDER BY year DESC, month DESC
       `;
-      const result = await pool.query(query, [req.user.id]);
+      const result = await pool.query(query, [req.user.id, month, year]);
       return res.json(result.rows);
     } catch (innerErr) {
-      // If spent_amount column doesn't exist, use 0 as default
       if (innerErr.message.includes('spent_amount')) {
-        console.warn(' Using fallback query without spent_amount column');
         const query = `
           SELECT id, category, limit_amount, 0 as spent_amount, month, year, created_at
           FROM budgets
-          WHERE user_id = $1
+          WHERE user_id = $1 AND month = $2 AND year = $3
           ORDER BY year DESC, month DESC
         `;
-        const result = await pool.query(query, [req.user.id]);
+        const result = await pool.query(query, [req.user.id, month, year]);
         return res.json(result.rows);
       }
       throw innerErr;
