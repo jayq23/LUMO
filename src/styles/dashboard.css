@@ -654,4 +654,12 @@ body {
     -webkit-backdrop-filter: none !important;
     background: rgba(21, 23, 32, 0.98) !important;
   }
+  
+  .stat-change svg,
+  .stat-icon svg {
+    transform: translateZ(0); 
+    will-change: transform; 
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
 }
