@@ -19,8 +19,14 @@ const tools = [
       parameters: {
         type: 'object',
         properties: {
-          month: { type: 'number', description: 'Month number 1-12. Omit for all-time summary.' },
-          year: { type: 'number', description: 'Year e.g. 2026. Required if month is given; omit both for all-time summary.' }
+          month: { 
+            type: 'number', 
+            description: 'Month number 1-12. MUST be a raw integer number, NOT a string. Omit for all-time summary.' 
+        },
+          year: { 
+            type: 'number', 
+            description: 'Year e.g. 2026. MUST be a raw integer number, NOT a string. Required if month is given; omit both for all-time summary.' 
+        }
         }
       }
     }
