@@ -167,7 +167,7 @@ export default function AIAssistant({ embedded = false }) {
                 className={`ai-message ${msg.type} ${msg.isError ? 'error' : ''}`}
               >
                 {msg.isError && <AlertCircle size={16} />}
-                <span>{msg.text}</span>
+                <span style={{ whiteSpace: 'pre-line' }}>{msg.text}</span>
               </div>
             ))}
             {loading && (
