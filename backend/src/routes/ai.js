@@ -199,6 +199,29 @@ async function executeTool(toolName, args, userId) {
   return { error: 'Unknown tool' };
 }
 
+// ─── Formatting safety net ─────────────────────────────────────────────────────
+// The model is told to use real newlines between the headline and each
+// category breakdown line, but small/fast models don't always follow that
+// instruction and sometimes collapse everything into one sentence (e.g.
+// "₱15,100 Food: ₱580 Shopping: ₱2600..."). If we detect that pattern —
+// multiple "Label: amount" pairs with no newlines already present — we
+// force-split it ourselves so the UI always renders it as a readable list.
+function formatBreakdownText(text) {
+  if (!text || typeof text !== 'string' || text.includes('\n')) return text;
+
+  const pairPattern = /([A-Za-z][A-Za-z\s]{0,25}?):\s*([₱$€£¥]?[\d,]+(?:\.\d{1,2})?%?)/g;
+  const matches = [...text.matchAll(pairPattern)];
+
+  // Need at least 2 "Label: amount" pairs to treat this as a breakdown
+  // worth reformatting — a single colon (e.g. a stray "Note:") isn't enough.
+  if (matches.length < 2) return text;
+
+  const headline = text.slice(0, matches[0].index).trim();
+  const lines = matches.map(m => `${m[1].trim()}: ${m[2].trim()}`);
+
+  return [headline, '', ...lines].filter(Boolean).join('\n');
+}
+
 // ─── POST /api/ai/ask — Full agentic loop ─────────────────────────────────────
 router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
   try {
@@ -240,6 +263,14 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
       return res.json({ success: true, response: 'This expense tracker was created by Jay Sorreda.' });
     }
 
+    // NOTE: We used to hard-block off-topic questions here with an
+    // English/Tagalog keyword list before ever calling the AI. That broke
+    // for any other language (e.g. German) since a question like
+    // "Zeig mir die Zusammenfassung für Juli" matches none of the keywords
+    // and got rejected even though it's clearly finance-related. The
+    // system prompt's CRITICAL RULE below already enforces the same topic
+    // guard, language-agnostically, so we let the model handle it instead.
+
     // Agentic loop
     const now = new Date();
     const messages = [
@@ -269,6 +300,7 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
     let finalResponse = '';
     const MAX_ITERATIONS = 5; // guardrail — prevent infinite loop
     let iterations = 0;
+    let retriedMalformedCall = false;
 
     while (iterations < MAX_ITERATIONS) {
       iterations++;
@@ -290,7 +322,24 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
 
       if (!groqResponse.ok) {
         const err = await groqResponse.json();
-        throw new Error(err.error?.message || 'Groq request failed');
+        const errMessage = err.error?.message || 'Groq request failed';
+
+        // Groq occasionally produces a malformed function call (bad JSON /
+        // schema mismatch) — this is model flakiness, not a real failure.
+        // Retry once with the same messages before giving up gracefully.
+        const isMalformedToolCall = errMessage.toLowerCase().includes('failed to call a function');
+        if (isMalformedToolCall && !retriedMalformedCall) {
+          retriedMalformedCall = true;
+          iterations--; // don't count the retry against MAX_ITERATIONS
+          continue;
+        }
+        if (isMalformedToolCall) {
+          // Retry also failed — respond nicely instead of a hard 500.
+          finalResponse = 'Sorry, I had trouble understanding that one — could you rephrase your question?';
+          break;
+        }
+
+        throw new Error(errMessage);
       }
 
       const data = await groqResponse.json();
@@ -311,6 +360,12 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
         } catch {
           args = {};
         }
+        // JSON.parse('null') resolves to null (not an error), and
+        // JSON.parse('[]') resolves to an array — neither is a usable args
+        // object, so guard against both before executeTool touches args.xxx
+        if (!args || typeof args !== 'object' || Array.isArray(args)) {
+          args = {};
+        }
         console.log(`AI calling tool: ${toolCall.function.name}`, args);
 
         const result = await executeTool(toolCall.function.name, args, userId);
@@ -324,7 +379,7 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
       // Loop continues — AI will decide kung kailangan pa ng another tool or final na
     }
 
-    res.json({ success: true, response: finalResponse });
+    res.json({ success: true, response: formatBreakdownText(finalResponse) });
 
   } catch (error) {
     console.error('AI ask error:', error.message);
