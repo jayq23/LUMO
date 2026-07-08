@@ -8,14 +8,21 @@ import { getCurrencySymbol } from '../utils/currencyHelper.js';
 const router = express.Router();
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
+
 // ─── Tool definitions ─────────────────────────────────────────────────────────
 const tools = [
   {
     type: 'function',
     function: {
       name: 'get_financial_summary',
-      description: 'Get the user financial summary — income, expenses, balance, category breakdown, and budget status',
-      parameters: { type: 'object', properties: {} }
+      description: 'Get the user financial summary — income, expenses, balance, category breakdown, and budget status. Can be scoped to a specific month/year, or left blank for all-time totals.',
+      parameters: {
+        type: 'object',
+        properties: {
+          month: { type: 'number', description: 'Month number 1-12. Omit for all-time summary.' },
+          year: { type: 'number', description: 'Year e.g. 2026. Required if month is given; omit both for all-time summary.' }
+        }
+      }
     }
   },
   {
@@ -63,12 +70,14 @@ const tools = [
     type: 'function',
     function: {
       name: 'list_transactions',
-      description: 'Get list of transactions, optionally filtered by type or category',
+      description: 'Get list of transactions, optionally filtered by type, category, or a specific month/year',
       parameters: {
         type: 'object',
         properties: {
           type: { type: 'string', enum: ['expense', 'income', 'all'] },
           category: { type: 'string', description: 'Filter by category (optional)' },
+          month: { type: 'number', description: 'Month number 1-12 (optional)' },
+          year: { type: 'number', description: 'Year e.g. 2026 (optional, pair with month)' },
           limit: { type: 'number', description: 'Max number of transactions to return, default 10' }
         }
       }
@@ -79,9 +88,24 @@ const tools = [
 // ─── Tool executor ─────────────────────────────────────────────────────────────
 async function executeTool(toolName, args, userId) {
   if (toolName === 'get_financial_summary') {
+    const params = [userId];
+    let dateFilter = '';
+
+    // Scope to a specific month/year if the AI provided one
+    if (args.month && args.year) {
+      params.push(args.month, args.year);
+      dateFilter = ` AND EXTRACT(MONTH FROM transaction_date) = $${params.length - 1} AND EXTRACT(YEAR FROM transaction_date) = $${params.length}`;
+    } else if (args.year) {
+      params.push(args.year);
+      dateFilter = ` AND EXTRACT(YEAR FROM transaction_date) = $${params.length}`;
+    }
+
     const txResult = await pool.query(
-      'SELECT category, amount, type, description, transaction_date FROM transactions WHERE user_id = $1 ORDER BY transaction_date DESC',
-      [userId]
+      `SELECT category, amount, type, description, transaction_date
+       FROM transactions
+       WHERE user_id = $1${dateFilter}
+       ORDER BY transaction_date DESC`,
+      params
     );
     const transactions = txResult.rows;
 
@@ -93,11 +117,17 @@ async function executeTool(toolName, args, userId) {
       categoryBreakdown[t.category] = (categoryBreakdown[t.category] || 0) + parseFloat(t.amount);
     });
 
+    // Budgets are only meaningful for the month/year being asked about.
+    // Default to the current month/year if none was specified.
+    const now = new Date();
+    const budgetMonth = args.month || now.getMonth() + 1;
+    const budgetYear = args.year || now.getFullYear();
+
     let budgets = [];
     try {
       const budgetResult = await pool.query(
-        'SELECT category, limit_amount, COALESCE(spent_amount, 0) as spent_amount FROM budgets WHERE user_id = $1',
-        [userId]
+        'SELECT category, limit_amount, COALESCE(spent_amount, 0) as spent_amount FROM budgets WHERE user_id = $1 AND month = $2 AND year = $3',
+        [userId, budgetMonth, budgetYear]
       );
       budgets = budgetResult.rows.map(b => ({
         category: b.category,
@@ -109,6 +139,7 @@ async function executeTool(toolName, args, userId) {
     } catch { budgets = []; }
 
     return {
+      scope: args.month && args.year ? `${args.month}/${args.year}` : (args.year ? `year ${args.year}` : 'all-time'),
       totalIncome,
       totalExpenses,
       netBalance: totalIncome - totalExpenses,
@@ -148,6 +179,15 @@ async function executeTool(toolName, args, userId) {
       params.push(args.category);
       query += ` AND category = $${params.length}`;
     }
+    if (args.month && args.year) {
+      params.push(args.month);
+      query += ` AND EXTRACT(MONTH FROM transaction_date) = $${params.length}`;
+      params.push(args.year);
+      query += ` AND EXTRACT(YEAR FROM transaction_date) = $${params.length}`;
+    } else if (args.year) {
+      params.push(args.year);
+      query += ` AND EXTRACT(YEAR FROM transaction_date) = $${params.length}`;
+    }
 
     query += ` ORDER BY transaction_date DESC LIMIT $${params.length + 1}`;
     params.push(args.limit || 10);
@@ -162,7 +202,7 @@ async function executeTool(toolName, args, userId) {
 // ─── POST /api/ai/ask — Full agentic loop ─────────────────────────────────────
 router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
   try {
-    const { question, currency: rawCurrency, language: rawLanguage } = req.body;
+    const { question, currency: rawCurrency, language: rawLanguage, history: rawHistory } = req.body;
     const userId = req.user.id;
 
     if (!question || question.trim().length === 0) {
@@ -173,6 +213,18 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
     }
     if (!GROQ_API_KEY) {
       return res.status(500).json({ error: 'GROQ_API_KEY not configured on server' });
+    }
+
+    // Conversation history from the frontend — only keep plain user/assistant
+    // text turns (never trust tool_calls/tool results from the client) and
+    // cap it so the payload/context doesn't grow unbounded.
+    const MAX_HISTORY_TURNS = 6; // last 6 exchanges (~12 messages)
+    let history = [];
+    if (Array.isArray(rawHistory)) {
+      history = rawHistory
+        .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+        .slice(-MAX_HISTORY_TURNS * 2)
+        .map(m => ({ role: m.role, content: m.content.slice(0, 1000) }));
     }
 
     // currency/language live in localStorage on the frontend (no DB column
@@ -188,40 +240,28 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
       return res.json({ success: true, response: 'This expense tracker was created by Jay Sorreda.' });
     }
 
-    // Finance topic guard — hard filter, doesn't rely on the model's discretion
-    const financeKeywords = [
-      'budget', 'expense', 'income', 'transaction', 'spend', 'spent', 'save', 'saving',
-      'money', 'finance', 'financial', 'salary', 'cost', 'price', 'balance', 'pay',
-      'debt', 'invest', 'investment', 'allowance', 'freelance', 'gift', 'category',
-      'summary', 'report', 'how much', 'total', 'food', 'transport', 'shopping',
-      'subscription', 'utilities', 'health'
-    ];
-    const isFinanceRelated = financeKeywords.some(k => question.toLowerCase().includes(k));
-
-    if (!isFinanceRelated) {
-      return res.json({
-        success: true,
-        response: 'I can only help with finance and budgeting questions! Ask me about your expenses, budget, or financial goals instead.'
-      });
-    }
-
     // Agentic loop
+    const now = new Date();
     const messages = [
       {
         role: 'system',
         content: `You are Lumo AI, a finance assistant. You ONLY discuss personal finance, budgeting, expenses, income, savings, and money management and also you can answer summary questions about their finances.
 
-    CRITICAL RULE: If the user's question is NOT about finance, budgeting, or their transactions (examples of off-topic: love, relationships, general trivia, coding, philosophy, etc), you MUST NOT answer it at all. Instead respond with EXACTLY this sentence and nothing else: "I can only help with finance and budgeting questions! Ask me about your expenses, budget, or financial goals instead."
+    The user may ask their question in ANY language (English, Filipino, German, or anything else) — understand it regardless of language.
+
+    CRITICAL RULE: If the user's question is NOT about finance, budgeting, or their transactions (examples of off-topic: love, relationships, general trivia, coding, philosophy, etc), you MUST NOT answer it at all. Instead respond with this message translated into ${language}, and nothing else: "I can only help with finance and budgeting questions! Ask me about your expenses, budget, or financial goals instead."
 
     Do not explain the off-topic concept first before declining. Do not be polite-but-still-answer. Refuse immediately and completely.
 
     For finance-related questions only:
     - You can answer questions AND take actions (add transactions, create budgets, check summaries).
-    - Always respond in ${language}.
+    - Today's date is ${now.toISOString().split('T')[0]}. When the user names a specific month (e.g. "June", "last month", "Hunyo", "Juni"), figure out the correct month number and year and pass them to get_financial_summary or list_transactions. If no month is mentioned, omit month/year for an all-time view.
+    - Always respond in ${language}, regardless of what language the question was asked in.
     - The user's currency is ${currency} (symbol: ${currencySymbol}). Always show monetary amounts using this symbol, never assume a different currency.
     - Be concise and professional.
     - No markdown symbols or bullet points.`
       },
+      ...history,
       { role: 'user', content: question }
     ];
 
