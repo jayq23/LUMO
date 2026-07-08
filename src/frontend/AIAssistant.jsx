@@ -10,6 +10,10 @@ const INITIAL_MESSAGE = {
   text: 'Hello! I can help you understand your expenses. Ask me anything.',
 };
 
+// How many prior exchanges to send back to the backend as context.
+// Keep in sync with MAX_HISTORY_TURNS on the server (backend/src/routes/ai.js).
+const MAX_HISTORY_TURNS = 6;
+
 export default function AIAssistant({ embedded = false }) {
   const { user, isInitialized, preferences } = useAuth();
   const currency = preferences.currency;
@@ -72,16 +76,35 @@ export default function AIAssistant({ embedded = false }) {
     localStorage.removeItem(`lumo:chat:${user?.id}`);
   };
 
+  // Convert the UI's { type: 'user' | 'bot', text } messages into the
+  // { role: 'user' | 'assistant', content } shape the backend expects,
+  // skipping error bubbles and the static greeting (not a real turn),
+  // and only keeping the most recent N exchanges.
+  const buildHistoryPayload = (msgList) => {
+    return msgList
+      .filter(m => m.id !== INITIAL_MESSAGE.id && !m.isError)
+      .map(m => ({
+        role: m.type === 'user' ? 'user' : 'assistant',
+        content: m.text,
+      }))
+      .slice(-MAX_HISTORY_TURNS * 2);
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
+
+    // Snapshot history BEFORE appending the new user message —
+    // the backend appends `question` itself, so history should only
+    // contain turns prior to it.
+    const history = buildHistoryPayload(messages);
 
     setMessages(prev => [...prev, { id: Date.now(), type: 'user', text: input }]);
     setInput('');
     setLoading(true);
 
     try {
-      const result = await groq.askAboutExpenses(input, currency, language);
+      const result = await groq.askAboutExpenses(input, currency, language, history);
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         type: 'bot',
