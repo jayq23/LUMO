@@ -259,7 +259,8 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
     - Always respond in ${language}, regardless of what language the question was asked in.
     - The user's currency is ${currency} (symbol: ${currencySymbol}). Always show monetary amounts using this symbol, never assume a different currency.
     - Be concise and professional.
-    - No markdown symbols or bullet points.`
+    - Format your answer for readability: put the headline number (e.g. total spent, net balance) on its own first line, then a blank line, then each category or item on its own line like "Food: ₱280". Use a real newline character between each line, not commas in one sentence.
+    - Do not use markdown symbols like **, #, -, or * for formatting — use plain line breaks only, since the chat UI renders plain text.`
       },
       ...history,
       { role: 'user', content: question }
