@@ -200,12 +200,6 @@ async function executeTool(toolName, args, userId) {
 }
 
 // ─── Formatting safety net ─────────────────────────────────────────────────────
-// The model is told to use real newlines between the headline and each
-// category breakdown line, but small/fast models don't always follow that
-// instruction and sometimes collapse everything into one sentence (e.g.
-// "₱15,100 Food: ₱580 Shopping: ₱2600..."). If we detect that pattern —
-// multiple "Label: amount" pairs with no newlines already present — we
-// force-split it ourselves so the UI always renders it as a readable list.
 function formatBreakdownText(text) {
   if (!text || typeof text !== 'string' || text.includes('\n')) return text;
 
@@ -217,9 +211,14 @@ function formatBreakdownText(text) {
   if (matches.length < 2) return text;
 
   const headline = text.slice(0, matches[0].index).trim();
+  // Safety net: if the model still slips and gives a bare, unlabeled number
+  // as the headline (e.g. "2650" with no words), label it instead of
+  // showing a naked figure.
+  const bareNumberPattern = /^[₱$€£¥]?[\d,]+(?:\.\d{1,2})?$/;
+  const labeledHeadline = bareNumberPattern.test(headline) ? `Total: ${headline}` : headline;
   const lines = matches.map(m => `${m[1].trim()}: ${m[2].trim()}`);
 
-  return [headline, '', ...lines].filter(Boolean).join('\n');
+  return [labeledHeadline, '', ...lines].filter(Boolean).join('\n');
 }
 
 // ─── POST /api/ai/ask — Full agentic loop ─────────────────────────────────────
@@ -261,7 +260,7 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
     const creatorKeywords = ['who created', 'who made', 'who built', 'creator', 'developer', 'made by', 'created by'];
     if (creatorKeywords.some(k => question.toLowerCase().includes(k))) {
       return res.json({ success: true, response: 'This expense tracker was created by Jay Sorreda.' });
-    } 
+    }
 
     // Agentic loop
     const now = new Date();
@@ -282,7 +281,7 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
     - Always respond in ${language}, regardless of what language the question was asked in.
     - The user's currency is ${currency} (symbol: ${currencySymbol}). Always show monetary amounts using this symbol, never assume a different currency.
     - Be concise and professional.
-    - Format your answer for readability: put the headline number (e.g. total spent, net balance) on its own first line, then a blank line, then each category or item on its own line like "Food: ₱280". Use a real newline character between each line, not commas in one sentence.
+    - Format your answer for readability: the first line must be a complete, labeled sentence stating the headline number with its currency symbol — for example "Total spent: ₱2650" or "You spent a total of ₱2650 in June." Never output the headline as a bare number with no label (e.g. just "2650" is wrong). After the headline, add a blank line, then each category or item on its own line like "Food: ₱280". Use a real newline character between each line, not commas in one sentence.
     - Do not use markdown symbols like **, #, -, or * for formatting — use plain line breaks only, since the chat UI renders plain text.`
       },
       ...history,
