@@ -261,15 +261,7 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
     const creatorKeywords = ['who created', 'who made', 'who built', 'creator', 'developer', 'made by', 'created by'];
     if (creatorKeywords.some(k => question.toLowerCase().includes(k))) {
       return res.json({ success: true, response: 'This expense tracker was created by Jay Sorreda.' });
-    }
-
-    // NOTE: We used to hard-block off-topic questions here with an
-    // English/Tagalog keyword list before ever calling the AI. That broke
-    // for any other language (e.g. German) since a question like
-    // "Zeig mir die Zusammenfassung für Juli" matches none of the keywords
-    // and got rejected even though it's clearly finance-related. The
-    // system prompt's CRITICAL RULE below already enforces the same topic
-    // guard, language-agnostically, so we let the model handle it instead.
+    } 
 
     // Agentic loop
     const now = new Date();
