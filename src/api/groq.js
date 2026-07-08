@@ -7,7 +7,9 @@ export const groq = {
   isAvailable: () => true,
 
   //default language is English, default currency is USD
-  askAboutExpenses: async (question, currency = 'USD', language = 'English') => {
+  // history: array of { role: 'user' | 'assistant', content: string } — prior
+  // turns in the conversation, oldest first, NOT including the new `question`.
+  askAboutExpenses: async (question, currency = 'USD', language = 'English', history = []) => {
     // Creator check — no need to hit backend
     if (creatorKeywords.some(k => question.toLowerCase().includes(k))) {
       return { success: true, response: 'This expense tracker was created by Jay Sorreda.' };
@@ -22,7 +24,7 @@ export const groq = {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` })
         },
-        body: JSON.stringify({ question, currency, language })
+        body: JSON.stringify({ question, currency, language, history })
       });
 
       const data = await response.json();
