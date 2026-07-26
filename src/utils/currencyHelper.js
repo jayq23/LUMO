@@ -5,12 +5,9 @@
 export const currencySymbols = {
   USD: '$',
   EUR: '€',
-  GBP: '£',
-  CAD: 'C$',
-  AUD: 'A$',
+  WON: '₩',
+  RUB: '₽',
   JPY: '¥',
-  INR: '₹',
-  MXN: '$',
   PHP: '₱'
 };
 
