@@ -11,7 +11,7 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
 // ─── Tool definitions ─────────────────────────────────────────────────────────
 const tools = [
-  {
+    {
     type: 'function',
     function: {
       name: 'get_financial_summary',
@@ -20,13 +20,13 @@ const tools = [
         type: 'object',
         properties: {
           month: { 
-            type: 'number', 
-            description: 'Month number 1-12. MUST be a raw integer number, NOT a string. Omit for all-time summary.' 
-        },
+            type: ['number', 'null'], 
+            description: 'Month number 1-12. MUST be a raw integer number, NOT a string. Omit or pass null for all-time summary.' 
+          },
           year: { 
-            type: 'number', 
-            description: 'Year e.g. 2026. MUST be a raw integer number, NOT a string. Required if month is given; omit both for all-time summary.' 
-        }
+            type: ['number', 'null'], 
+            description: 'Year e.g. 2026. MUST be a raw integer number, NOT a string. Omit or pass null for all-time summary.' 
+          }
         }
       }
     }
@@ -65,8 +65,8 @@ const tools = [
             enum: ['food', 'transport', 'shopping', 'subscriptions', 'health', 'utilities', 'other']
           },
           limit_amount: { type: 'number', description: 'Budget limit amount' },
-          month: { type: 'number', description: 'Month number (1-12)' },
-          year: { type: 'number', description: 'Year e.g. 2026' }
+          month: { type: ['number', 'null'], description: 'Month number (1-12), or null to default to current month' },
+          year: { type: ['number', 'null'], description: 'Year e.g. 2026, or null to default to current year' }
         },
         required: ['category', 'limit_amount']
       }
@@ -82,8 +82,8 @@ const tools = [
         properties: {
           type: { type: 'string', enum: ['expense', 'income', 'all'] },
           category: { type: 'string', description: 'Filter by category (optional)' },
-          month: { type: 'number', description: 'Month number 1-12 (optional)' },
-          year: { type: 'number', description: 'Year e.g. 2026 (optional, pair with month)' },
+          month: { type: ['number', 'null'], description: 'Month number 1-12, or null for no month filter' },
+          year: { type: ['number', 'null'], description: 'Year e.g. 2026, or null for no year filter (pair with month)' },
           limit: { type: 'number', description: 'Max number of transactions to return, default 10' }
         }
       }
@@ -359,14 +359,16 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
         }),
       });
 
-      if (!groqResponse.ok) {
+        if (!groqResponse.ok) {
         const err = await groqResponse.json();
         const errMessage = err.error?.message || 'Groq request failed';
 
         // Groq occasionally produces a malformed function call (bad JSON /
         // schema mismatch) — this is model flakiness, not a real failure.
         // Retry once with the same messages before giving up gracefully.
-        const isMalformedToolCall = errMessage.toLowerCase().includes('failed to call a function');
+        const isMalformedToolCall = 
+          errMessage.toLowerCase().includes('failed to call a function') ||
+          errMessage.toLowerCase().includes('tool call validation failed');
         if (isMalformedToolCall && !retriedMalformedCall) {
           retriedMalformedCall = true;
           iterations--; // don't count the retry against MAX_ITERATIONS
