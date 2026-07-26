@@ -351,7 +351,7 @@ router.post('/ask', aiLimiter, authMiddleware, async (req, res) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
+          model: 'openai/gpt-oss-120b',
           messages,
           tools,
           tool_choice: 'auto',
@@ -445,7 +445,7 @@ router.post('/categorize', aiLimiter, authMiddleware, async (req, res) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'openai/gpt-oss-120b',
         messages: [{ role: 'user', content: `Categorize this expense: "${description.trim()}"` }],
         tools: [{
           type: 'function',
