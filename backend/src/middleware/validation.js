@@ -38,6 +38,13 @@ export const schemas = {
     month: Joi.number().min(1).max(12).required(),
     year: Joi.number().min(2000).required(),
   }),
+  forgotPassword: Joi.object({
+  email: Joi.string().email().required(),
+  }),
+
+  resetPassword: Joi.object({
+    newPassword: Joi.string().min(6).required(),
+  }),
 };
 
 export const validateRequest = (schema) => {
