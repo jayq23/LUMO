@@ -12,5 +12,7 @@ router.get('/profile/:id', authMiddleware, verifyOwnership, authController.getPr
 router.put('/profile/:id', authMiddleware, verifyOwnership, validateRequest(schemas.updateProfile), authController.updateProfile);
 router.put('/password/:id', authMiddleware, verifyOwnership, validateRequest(schemas.changePassword), authController.changePassword);
 router.delete('/account/:id', authMiddleware, verifyOwnership, authController.deleteAccount);
+router.post('/forgot-password', forgotPasswordLimiter, validateRequest(schemas.forgotPassword), authController.forgotPassword);
+router.post('/reset-password/:token', validateRequest(schemas.resetPassword), authController.resetPassword);
 
 export default router;
