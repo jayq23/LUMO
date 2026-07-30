@@ -16,3 +16,14 @@ CREATE INDEX IF NOT EXISTS idx_users_oauth ON users(oauth_provider, oauth_uid);
 SELECT column_name, is_nullable, data_type 
 FROM information_schema.columns 
 WHERE table_name = 'users';
+
+
+-- Migration: Add password reset token support
+-- Run this once against your Supabase/Postgres database
+
+ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS reset_token TEXT,
+  ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP;
+
+-- index for fast token lookups
+CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users (reset_token);
