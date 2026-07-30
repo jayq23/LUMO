@@ -1,6 +1,8 @@
 import bcryptjs from 'bcryptjs';
+import crypto from 'crypto';
 import * as userModel from '../models/userModel.js';
 import { generateToken } from '../middleware/authMiddleware.js';
+import { sendPasswordResetEmail } from '../services/emailService.js';
 
 export const register = async (req, res, next) => {
   try {
@@ -173,6 +175,73 @@ export const deleteAccount = async (req, res, next) => {
     await userModel.deleteUser(userId);
 
     res.json({ message: 'Account deleted successfully' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ── Password reset ──────────────────────────────────────────────────────────
+
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    const user = await userModel.getUserByEmail(email);
+
+    if (!user) {
+      return res.json({
+        message: 'If an account exists for that email, a reset link has been sent.'
+      });
+    }
+
+    // Generate a random raw token — this is what gets emailed to the user
+    // and put in the URL. We never store this raw value in the database.
+    const rawToken = crypto.randomBytes(32).toString('hex');
+
+    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+    const expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+    await userModel.setResetToken(user.id, tokenHash, expiry);
+
+    try {
+      await sendPasswordResetEmail(user.email, rawToken);
+    } catch (emailErr) {
+
+      console.error('Failed to send password reset email:', emailErr.message);
+    }
+
+    res.json({
+      message: 'If an account exists for that email, a reset link has been sent.'
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const { newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const user = await userModel.getUserByResetTokenHash(tokenHash);
+
+    if (!user) {
+      return res.status(400).json({ error: 'This reset link is invalid or has expired.' });
+    }
+
+    const salt = await bcryptjs.genSalt(10);
+    const passwordHash = await bcryptjs.hash(newPassword, salt);
+
+    await userModel.updateUser(user.id, { password_hash: passwordHash });
+    await userModel.clearResetToken(user.id);
+
+    res.json({ message: 'Password has been reset successfully.' });
   } catch (err) {
     next(err);
   }
