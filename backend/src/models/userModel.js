@@ -88,12 +88,6 @@ export const deleteUser = async (id) => {
 
 // ── Password reset ──────────────────────────────────────────────────────────
 export const setResetToken = async (userId, tokenHash, expiry) => {
-  const query = `
-    UPDATE users
-    SET reset_token = $1, reset_token_expiry = $2, updated_at = CURRENT_TIMESTAMP
-    WHERE id = $3
-    RETURNING id
-  `;
   const result = await pool.query(query, [tokenHash, expiry, userId]);
   return result.rows[0];
 };
