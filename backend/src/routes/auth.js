@@ -2,7 +2,7 @@ import express from 'express';
 import * as authController from '../controllers/authController.js';
 import { authMiddleware, verifyOwnership } from '../middleware/authMiddleware.js';
 import { validateRequest, schemas } from '../middleware/validation.js';
-import { loginLimiter, registerLimiter } from '../middleware/rateLimiter.js';
+import { loginLimiter, registerLimiter, forgotPasswordLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
