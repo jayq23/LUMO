@@ -89,6 +89,32 @@ const api = {
         }
         return data;
       }),
+
+    forgotPassword: (email) =>
+      fetch(`${API_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      }).then(async r => {
+        const data = await r.json();
+        if (!r.ok) {
+          throw new Error(data.error || 'Failed to request password reset');
+        }
+        return data;
+      }),
+
+    resetPassword: (token, newPassword) =>
+      fetch(`${API_URL}/auth/reset-password/${token}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newPassword }),
+      }).then(async r => {
+        const data = await r.json();
+        if (!r.ok) {
+          throw new Error(data.error || 'Failed to reset password');
+        }
+        return data;
+      }),
   },
 
   // Transactions
