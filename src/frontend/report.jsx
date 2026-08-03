@@ -298,7 +298,7 @@ ${transactions.filter(t => {
           />
           <ReportMetricCard 
             label={t('reports.topCategory')} 
-            value={metrics ? (metrics.topCategory ? metrics.topCategory : "—") : "—"} 
+            value={metrics ? (metrics.topCategory ? t(`categories.${metrics.topCategory}`) : "—") : "—"} 
             note={metrics ? (metrics.topCategory ? formatCurrency(metrics.topCategoryAmount, currency) : t('reports.topCategoryNote')) : t('reports.loading')} 
           />
           <ReportMetricCard 
@@ -405,7 +405,7 @@ ${transactions.filter(t => {
                     return (
                       <div key={category} style={{ marginBottom: '1rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                          <span>{category}</span>
+                          <span>{t(`categories.${category}`)}</span>
                           <span>{formatCurrency(amount, currency)} ({percentage}%)</span>
                         </div>
                         <div style={{ 

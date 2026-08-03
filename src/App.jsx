@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from './auth/AuthContext.jsx'
 import Login from './auth/login.jsx'
 import Register from './auth/register.jsx'
+import ForgotPassword from './auth/forgotPassword.jsx'
+import ResetPassword from './auth/resetPassword.jsx'
 import Dashboard from './frontend/dashboard.jsx'
 import Homepage from './frontend/homepage.jsx'
 import Settings from './frontend/settings.jsx'
@@ -12,13 +14,13 @@ import Assistant from './frontend/assistant.jsx'
 import { useEffect } from "react"; 
 
 function App() {
-  // Wake up Render on app load
-  useEffect(() => {
-    fetch('https://lumo-5f41.onrender.com/api/health').catch(() => {})
+// Wake up Render on app load
+useEffect(() => {
+fetch('https://lumo-5f41.onrender.com/api/health').catch(() => {})
   }, [])
 
-  return (
-    <AuthProvider>
+return (
+<AuthProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Homepage />} />
@@ -30,6 +32,8 @@ function App() {
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

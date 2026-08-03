@@ -19,7 +19,7 @@ function SectionShell({ title, subtitle, children }) {
     { label: t("nav.transactions"), href: "/transactions", icon: ArrowLeftRight },
     { label: t("nav.budgets"), href: "/budgets", icon: PieChart },
     { label: t("nav.reports"), href: "/reports", icon: BarChart2 },
-    { label: "AI Assistant", href: "/assistant", icon: MessageCircle },
+    { label: t("nav.assistant"), href: "/assistant", icon: MessageCircle },
     { label: t("nav.settings"), href: "/settings", icon: Settings },
   ];
 

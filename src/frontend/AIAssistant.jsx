@@ -3,12 +3,8 @@ import { MessageCircle, Send, AlertCircle, Loader } from 'lucide-react';
 import groq from '../api/groq.js';
 import { useAuth } from '../auth/AuthContext.jsx';
 import '../styles/ai-assistant.css';
-
-const INITIAL_MESSAGE = {
-  id: 1,
-  type: 'bot',
-  text: 'Hello! I can help you understand your expenses. Ask me anything.',
-};
+import { useTranslation } from "../utils/translations.js";
+import { getLanguageCode } from "../utils/languageHelper.js";
 
 // How many prior exchanges to send back to the backend as context.
 // Keep in sync with MAX_HISTORY_TURNS on the server (backend/src/routes/ai.js).
@@ -18,14 +14,16 @@ export default function AIAssistant({ embedded = false }) {
   const { user, isInitialized, preferences } = useAuth();
   const currency = preferences.currency;
   const language = preferences.language;
+  const langCode = getLanguageCode(language);
+  const t = useTranslation(langCode);
 
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState(() => {
     try {
       const saved = localStorage.getItem(`lumo:chat:${user?.id}`);
-      return saved ? JSON.parse(saved) : [INITIAL_MESSAGE];
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return [INITIAL_MESSAGE];
+      return [];
     }
   });
   const [input, setInput] = useState('');
@@ -41,11 +39,9 @@ export default function AIAssistant({ embedded = false }) {
   // Auto-scroll to bottom whenever messages change or window opens
   useEffect(() => {
     if (!embedded && !isOpen) return;
-
     const rafId = window.requestAnimationFrame(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     });
-
     return () => window.cancelAnimationFrame(rafId);
   }, [messages, loading, isOpen, embedded]);
 
@@ -65,24 +61,20 @@ export default function AIAssistant({ embedded = false }) {
     if (!user?.id) return;
     try {
       const saved = localStorage.getItem(`lumo:chat:${user.id}`);
-      setMessages(saved ? JSON.parse(saved) : [INITIAL_MESSAGE]);
+      setMessages(saved ? JSON.parse(saved) : []);
     } catch {
-      setMessages([INITIAL_MESSAGE]);
+      setMessages([]);
     }
   }, [user?.id]);
 
   const clearChat = () => {
-    setMessages([INITIAL_MESSAGE]);
+    setMessages([]);
     localStorage.removeItem(`lumo:chat:${user?.id}`);
   };
 
-  // Convert the UI's { type: 'user' | 'bot', text } messages into the
-  // { role: 'user' | 'assistant', content } shape the backend expects,
-  // skipping error bubbles and the static greeting (not a real turn),
-  // and only keeping the most recent N exchanges.
   const buildHistoryPayload = (msgList) => {
     return msgList
-      .filter(m => m.id !== INITIAL_MESSAGE.id && !m.isError)
+      .filter(m => !m.isError)
       .map(m => ({
         role: m.type === 'user' ? 'user' : 'assistant',
         content: m.text,
@@ -94,9 +86,6 @@ export default function AIAssistant({ embedded = false }) {
     e.preventDefault();
     if (!input.trim()) return;
 
-    // Snapshot history BEFORE appending the new user message —
-    // the backend appends `question` itself, so history should only
-    // contain turns prior to it.
     const history = buildHistoryPayload(messages);
 
     setMessages(prev => [...prev, { id: Date.now(), type: 'user', text: input }]);
@@ -131,28 +120,19 @@ export default function AIAssistant({ embedded = false }) {
 
   return (
     <div className={`ai-assistant ${embedded ? 'embedded' : ''}`}>
-      {/* Floating Button */}
       {!embedded && !disabled && (
-        <button
-          className="ai-button"
-          onClick={() => setIsOpen(!isOpen)}
-          title="AI Assistant"
-        >
+        <button className="ai-button" onClick={() => setIsOpen(!isOpen)} title={t('ai.title')}>
           <MessageCircle size={24} />
         </button>
       )}
 
-      {/* Chat Window */}
       {(embedded || isOpen) && !disabled && (
         <div className="ai-window">
           <div className="ai-header">
-            <h3>LUMO Assistant</h3>
+            <h3>{t('ai.lumotitle')}</h3>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <button
-                onClick={clearChat}
-                style={{ fontSize: '11px', opacity: 0.6, background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}
-              >
-                Clear
+              <button onClick={clearChat} style={{ fontSize: '11px', opacity: 0.6, background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
+                {t('ai.clear')}
               </button>
               {!embedded && (
                 <button className="ai-close" onClick={() => setIsOpen(false)}>✕</button>
@@ -161,11 +141,15 @@ export default function AIAssistant({ embedded = false }) {
           </div>
 
           <div className="ai-messages">
+            {/* ⬇️ Greeting rendered LIVE, not stored in state — always fresh */}
+            {messages.length === 0 && (
+              <div className="ai-message bot">
+                <span style={{ whiteSpace: 'pre-line' }}>{t('ai.initialMessage')}</span>
+              </div>
+            )}
+
             {messages.map(msg => (
-              <div
-                key={msg.id}
-                className={`ai-message ${msg.type} ${msg.isError ? 'error' : ''}`}
-              >
+              <div key={msg.id} className={`ai-message ${msg.type} ${msg.isError ? 'error' : ''}`}>
                 {msg.isError && <AlertCircle size={16} />}
                 <span style={{ whiteSpace: 'pre-line' }}>{msg.text}</span>
               </div>
@@ -173,7 +157,7 @@ export default function AIAssistant({ embedded = false }) {
             {loading && (
               <div className="ai-message bot loading">
                 <Loader size={16} />
-                <span>Thinking...</span>
+                <span>{t('ai.loading')}</span>
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -182,17 +166,13 @@ export default function AIAssistant({ embedded = false }) {
           <form className="ai-input-form" onSubmit={handleSendMessage}>
             <input
               type="text"
-              placeholder="Ask about your expenses..."
+              placeholder={t('ai.askQuestion')}
               value={input}
               onChange={e => setInput(e.target.value)}
               disabled={!isAvailable || loading}
               className="ai-input"
             />
-            <button
-              type="submit"
-              disabled={!isAvailable || loading || !input.trim()}
-              className="ai-send"
-            >
+            <button type="submit" disabled={!isAvailable || loading || !input.trim()} className="ai-send">
               <Send size={18} />
             </button>
           </form>

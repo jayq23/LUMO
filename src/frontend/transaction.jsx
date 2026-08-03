@@ -42,13 +42,13 @@ function QuickStat({ label, note, value, positive }) {
   );
 }
 
-function TransactionRow({ t, currency, language }) {
-  const color = getCategoryColor(t.category);
-  const isIncome = t.type === "income";
-  const amount = `${isIncome ? "+" : "-"}${formatCurrency(t.amount, currency)}`;
+function TransactionRow({ transaction, currency, language, tFn }) {
+  const color = getCategoryColor(transaction.category);
+  const isIncome = transaction.type === "income";
+  const amount = `${isIncome ? "+" : "-"}${formatCurrency(transaction.amount, currency)}`;
   const langCode = getLanguageCode(language);
-  const formattedDate = formatDate(t.transaction_date || t.transactionDate, langCode);
-  const isOffline = t._isOffline;
+  const formattedDate = formatDate(transaction.transaction_date || transaction.transactionDate, langCode);
+  const isOffline = transaction._isOffline;
 
   return (
     <div 
@@ -61,21 +61,18 @@ function TransactionRow({ t, currency, language }) {
         backgroundColor: isOffline ? "rgba(255,255,255,0.02)" : "transparent"
       }}
     >
-      {/* color dot with offline indicator */}
       <div style={{
         width: 10, height: 10, borderRadius: "50%",
         background: color, flexShrink: 0,
         border: isOffline ? "2px dashed rgba(255,255,255,0.5)" : "none"
       }} />
 
-      {/* info */}
       <div className="progress-label" style={{ flex: 1 }}>
-        <strong>{t.category}</strong>
-        <span>{t.description || "No description"}</span>
+        <strong>{tFn(`categories.${transaction.category?.toLowerCase()}`)}</strong>
+        <span>{transaction.description || "No description"}</span>
         {isOffline && <span style={{ color: '#f0a500', fontSize: '12px', marginLeft: '4px' }}>⏳ Offline</span>}
       </div>
 
-      {/* right side */}
       <div className="item-title-right">
         <span className={isIncome ? "amount-positive" : "amount-negative"}>
           {amount}
@@ -86,7 +83,7 @@ function TransactionRow({ t, currency, language }) {
       </div>
     </div>
   );
-}
+} 
 
 function Transactions() {
   const { user, isInitialized, preferences } = useAuth();
@@ -275,8 +272,8 @@ function Transactions() {
             </div>
           ) : filteredTransactions.length > 0 ? (
             <div>
-              {filteredTransactions.map((t) => (
-                <TransactionRow key={t.id} t={t} currency={currency} language={language} />
+              {filteredTransactions.map((txn) => (
+                <TransactionRow key={txn.id} transaction={txn} currency={currency} language={language} tFn={t} />
               ))}
             </div>
           ) : (

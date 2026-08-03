@@ -155,7 +155,7 @@ function Login() {
           <div className="field">
             <div className="field-row">
               <label htmlFor="password">PASSWORD</label>
-              <a href="/forgot-password" className="forgot-link">Forgot password?</a>
+              <a onClick={handleForgotPassword} className="forgot-link">Forgot password?</a>
             </div>
             <div className="input-wrapper">
               <input

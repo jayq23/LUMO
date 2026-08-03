@@ -61,20 +61,20 @@ function StatCard({ label, value, note, up, icon: Icon }) {
   );
 }
 
-function TransactionRow({ t, currency, language }) {
-  const isIncome = t.type === 'income';
-  const color  = getCategoryColor(t.category);
-  const amount = `${isIncome ? '+' : '-'}${formatCurrency(t.amount, currency)}`;
+function TransactionRow({ transaction, currency, language, tFn }) {
+  const isIncome = transaction.type === 'income';
+  const color  = getCategoryColor(transaction.category);
+  const amount = `${isIncome ? '+' : '-'}${formatCurrency(transaction.amount, currency)}`;
   const langCode = getLanguageCode(language);
-  const formattedDate = formatDate(t.transaction_date || t.transactionDate, langCode);
-  const isOffline = t._isOffline;
+  const formattedDate = formatDate(transaction.transaction_date || transaction.transactionDate, langCode);
+  const isOffline = transaction._isOffline;
 
   return (
     <div className="transaction-row" style={{ opacity: isOffline ? 0.7 : 1 }}>
       <div className="txn-dot" style={{ background: color, border: isOffline ? '2px dashed rgba(255,255,255,0.5)' : 'none' }} />
       <div className="txn-info">
-        <span className="txn-name">{t.category}</span>
-        <span className="txn-category">{t.description || 'No description'}{isOffline && ' ⏳'}</span>
+        <span className="txn-name">{tFn(`categories.${transaction.category?.toLowerCase()}`)}</span>
+        <span className="txn-category">{transaction.description || 'No description'}{isOffline && ' ⏳'}</span>
       </div>
       <div className="txn-right">
         <span className={`txn-amount ${isIncome ? 'income' : 'expense'}`}>{amount}</span>
@@ -83,7 +83,6 @@ function TransactionRow({ t, currency, language }) {
     </div>
   );
 }
-
 // ── Main component ──────────────────────────────────────────────
 
 function Dashboard() {
@@ -265,7 +264,7 @@ function Dashboard() {
           ) : recentTransactions.length > 0 ? (
             <div className="transactions-list">
               {recentTransactions.map((txn) => (
-                <TransactionRow key={txn.id} t={txn} currency={currency} language={language} />
+                <TransactionRow key={txn.id} transaction={txn} currency={currency} language={language} tFn={t} />
               ))}
             </div>
           ) : (

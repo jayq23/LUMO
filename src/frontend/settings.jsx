@@ -7,7 +7,7 @@ import { useTranslation } from "../utils/translations.js";
 import { getLanguageCode } from "../utils/languageHelper.js";
 import "../styles/section-pages.css";
 
-function SettingRow({ title, description, action, chip, select, onSelect, switchOn, onToggle, onAction }) {
+function SettingRow({ title, description, action, chip, select, selectLabels, onSelect, switchOn, onToggle, onAction }) {
   return (
     <div className="setting-row">
       <div className="setting-copy">
@@ -23,28 +23,18 @@ function SettingRow({ title, description, action, chip, select, onSelect, switch
         >
           {select.map((option) => (
             <option key={option} value={option}>
-              {option}
+              {selectLabels ? selectLabels[option] : option}
             </option>
           ))}
         </select>
       ) : chip ? (
         <span className="setting-chip">{chip}</span>
       ) : action ? (
-        <button 
-          className="ghost-btn" 
-          type="button"
-          onClick={onAction}
-        >
+        <button className="ghost-btn" type="button" onClick={onAction}>
           {action}
         </button>
       ) : (
-        <div 
-          className={`switch ${switchOn ? "switch-on" : ""}`}
-          onClick={onToggle}
-          style={{ cursor: 'pointer' }}
-          role="switch"
-          aria-checked={switchOn}
-        >
+        <div className={`switch ${switchOn ? "switch-on" : ""}`} onClick={onToggle} style={{ cursor: 'pointer' }} role="switch" aria-checked={switchOn}>
           <span className="switch-knob" />
         </div>
       )}
@@ -62,7 +52,7 @@ function Settings() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme') === 'dark' ? 'Dark' : 'Light');
+  const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme') === 'dark' ? 'dark' : 'light');
   
   // Edit profile state
   const [editName, setEditName] = useState(user?.name || '');
@@ -86,9 +76,14 @@ const currencyOptions = [
 ];
 const languageOptions = [
   'English',
+  'German',
   'Spanish',
+  'Russian',
+  'Korean',
+  'Japanese',
 ];
-const themeOptions = ['Light', 'Dark'];
+const themeOptions = ['light', 'dark'];
+const themeLabels = { light: t('settings.light'), dark: t('settings.dark') };
 
   // Update local preferences when context changes
   useEffect(() => {
@@ -209,7 +204,7 @@ const themeOptions = ['Light', 'Dark'];
 
   const changeTheme = (theme) => {
     setCurrentTheme(theme);
-    const isDark = theme === 'Dark';
+    const isDark = theme === 'dark';   // lowercase raw key na, hindi English literal
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
   };
@@ -332,7 +327,7 @@ const themeOptions = ['Light', 'Dark'];
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
                 <button type="button" onClick={() => { setShowPasswordModal(false); setError(''); setSuccess(''); }}
                   className="ghost-btn" style={{ padding: '0.5rem 1rem', opacity: loading ? 0.6 : 1 }} disabled={loading}>
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button type="submit" disabled={loading}
                   style={{ padding: '0.5rem 1rem', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: '500', opacity: loading ? 0.6 : 1 }}>
@@ -352,7 +347,7 @@ const themeOptions = ['Light', 'Dark'];
                 <h2>{t('settings.profile')}</h2>
                 <small>{t('settings.profileSubtitle')}</small>
               </div>
-              <span className="setting-chip">Active</span>
+              <span className="setting-chip">{t('settings.active')}</span>
             </div>
 
             <div className="summary-list">
@@ -391,8 +386,8 @@ const themeOptions = ['Light', 'Dark'];
 
             <div className="setting-column">
               <SettingRow
-                title="Password reset"
-                description="Update your password and recovery options."
+                title={t('settings.passwordReset')}
+                description={t('settings.passwordResetDescription')}
                 action={t('settings.updatePassword')}
                 onAction={() => setShowPasswordModal(true)}
               />
@@ -415,7 +410,7 @@ const themeOptions = ['Light', 'Dark'];
               <SettingRow
                 title={
                   <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    Weekly summary email
+                    {t('settings.weeklyEmail')}
                     <span style={{
                       fontSize: 10,
                       fontWeight: 700,
@@ -430,14 +425,14 @@ const themeOptions = ['Light', 'Dark'];
                     </span>
                   </span>
                 }
-                description="Weekly spending summaries via email — coming soon!"
+                description={t('settings.weeklyEmailDescription')}
                 switchOn={false}
                 onToggle={() => {}}
               />
               {/* Auto-categorize - Fully functional */}
               <SettingRow
-                title="Auto-categorize transactions"
-                description="Automatically assign categories based on description."
+                title= {t('settings.autoCategorize')}
+                description={t('settings.autoCategorizeDescription')}
                 switchOn={localPreferences.autoCategories}
                 onToggle={() => togglePreference('autoCategories')}
               />
@@ -447,27 +442,28 @@ const themeOptions = ['Light', 'Dark'];
           <div className="panel">
             <div className="panel-header">
               <div>
-                <h2>Appearance</h2>
-                <small>Customize how Lumo looks</small>
+                <h2>{t('settings.appearance')}</h2>
+                <small>{t('settings.appearanceDescription')}</small>
               </div>
               <Palette size={18} color="var(--accent)" />
             </div>
 
             <div className="setting-column">
               <SettingRow
-                title="Currency"
-                description="Display all amounts in your preferred currency."
+                title={t('settings.currency')}
+                description={t('settings.currencyDescription')}
                 chip={localPreferences.currency}
                 select={currencyOptions}
                 onSelect={changeCurrency}
               />
               <SettingRow
-                title="Theme"
-                description="Choose between light and dark theme."
-                chip={currentTheme}
-                select={themeOptions}
-                onSelect={changeTheme}
-              />
+              title={t('settings.theme')}
+              description={t('settings.themeDescription')}
+              chip={currentTheme}
+              select={themeOptions}
+              selectLabels={themeLabels}
+              onSelect={changeTheme}
+            />
               <SettingRow
                 title={t('settings.language')}
                 description={t('settings.selectLanguage')}

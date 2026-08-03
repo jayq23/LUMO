@@ -42,17 +42,6 @@ const normalizeCategory = (cat) => {
   return map[clean] ?? clean;
 };
 
-// Fixed category options — no free text, no typos
-const BUDGET_CATEGORIES = [
-  { value: 'food', label: 'Food' },
-  { value: 'transport', label: 'Transport' },
-  { value: 'shopping', label: 'Shopping' },
-  { value: 'subscriptions', label: 'Subscriptions' },
-  { value: 'health', label: 'Health' },
-  { value: 'utilities', label: 'Utilities' },
-  { value: 'other', label: 'Other' },
-];
-
 function Budgets() {
   const { user, isInitialized, preferences } = useAuth();
   const currency = preferences.currency;
@@ -70,6 +59,16 @@ function Budgets() {
 
   useSyncOfflineTransactions(user?.id);
 
+
+  const BUDGET_CATEGORIES = [
+  { value: 'food', label: t('categories.food') },
+  { value: 'transport', label:t('categories.transport') },
+  { value: 'shopping', label: t('categories.shopping') },
+  { value: 'subscriptions', label: t('categories.subscriptions') },
+  { value: 'health', label: t('categories.health') },
+  { value: 'utilities', label: t('categories.utilities') },
+  { value: 'other', label: t('categories.other') },
+];
   useEffect(() => {
     const refreshData = async (isInitial = false) => {
       if (user && isInitialized) {
@@ -235,7 +234,7 @@ function Budgets() {
           </strong>
           {alertingBudgets.map(b => (
             <span key={b.id} style={{ fontSize: 13, color: 'var(--text-1)' }}>
-              <strong>{b.category}</strong>: {b.percentage}% used
+              <strong>{t(`categories.${normalizeCategory(b.category)}`)}</strong>: {b.percentage}% used
               ({formatCurrency(b.categorySpent, currency)} of {formatCurrency(parseFloat(b.limit_amount), currency)})
               {b.percentage >= 100 && <span style={{ color: '#ff6b6b', fontWeight: 700 }}> — OVER BUDGET</span>}
             </span>
@@ -272,7 +271,7 @@ function Budgets() {
                   onChange={(e) => setNewBudget({ ...newBudget, category: e.target.value })}
                   style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--bg-2)', color: 'var(--text-1)', boxSizing: 'border-box' }}
                 >
-                  <option value="">-- Select a category --</option>
+                  <option value="">-- {t('budgets.selectCategory')} --</option>
                   {BUDGET_CATEGORIES.map(c => (
                     <option key={c.value} value={c.value}>{c.label}</option>
                   ))}
@@ -344,7 +343,7 @@ function Budgets() {
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', alignItems: 'center' }}>
                           <strong>
-                            {b.category}
+                             {t(`categories.${normalizeCategory(b.category)}`)}
                             {isAlerting && (
                               <span style={{ marginLeft: 6, fontSize: 11, color: '#ff6b6b' }}>
                                 {isOver ? '🔴 Over' : '⚠ Alert'}
@@ -455,7 +454,7 @@ function Budgets() {
               </div>
               <div style={{ marginTop: '1rem', padding: '1rem', borderRadius: '4px', background: outlook.onTrack ? 'rgba(81, 207, 102, 0.1)' : 'rgba(255, 107, 107, 0.1)' }}>
                 <strong style={{ color: outlook.onTrack ? '#51cf66' : '#ff6b6b' }}>
-                  {outlook.onTrack ? '✓ On track' : `⚠ Projected overspend: ${formatCurrency(outlook.projectedOverspend, currency)}`}
+                  {outlook.onTrack ? t('budgets.ontrack') : t('budgets.porjectingOverspend', { amount: formatCurrency(outlook.projectedOverspend, currency) })}
                 </strong>
               </div>
             </div>
